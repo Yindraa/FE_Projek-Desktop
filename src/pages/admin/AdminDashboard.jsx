@@ -144,7 +144,7 @@ export default function AdminDashboard() {
                 .map((_, index) => (
                   <div
                     key={index}
-                    className="bg-white rounded-lg shadow-md p-6 animate-pulse"
+                    className="bg-white rounded-xl shadow-md p-6 animate-pulse"
                   >
                     <div className="flex items-center">
                       <div className="rounded-md bg-amber-200 h-12 w-12"></div>
@@ -159,11 +159,11 @@ export default function AdminDashboard() {
             : stats.map((item) => (
                 <div
                   key={item.name}
-                  className="bg-white overflow-hidden shadow-md rounded-lg transition-all duration-200 hover:shadow-lg"
+                  className="bg-white overflow-hidden shadow-md rounded-xl transition-all duration-200 hover:shadow-lg"
                 >
                   <div className="p-5">
                     <div className="flex items-center">
-                      <div className="flex-shrink-0 bg-amber-600 rounded-md p-3">
+                      <div className="flex-shrink-0 bg-amber-600 rounded-xl p-3">
                         <item.icon
                           className="h-6 w-6 text-white"
                           aria-hidden="true"
@@ -212,7 +212,7 @@ export default function AdminDashboard() {
 
         {/* Charts Section */}
         <div className="mb-8">
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <div className="bg-white shadow-md rounded-xl overflow-hidden">
             <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
               <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
                 <ChartBarIcon className="h-5 w-5 mr-2 text-amber-600" />
@@ -226,7 +226,7 @@ export default function AdminDashboard() {
               {isLoading ? (
                 <div className="animate-pulse h-64 bg-gray-200 rounded"></div>
               ) : (
-                <div className="h-64 bg-amber-50 rounded-lg flex items-center justify-center">
+                <div className="h-64 bg-amber-50 rounded-xl flex items-center justify-center">
                   <p className="text-gray-500">
                     Sales chart will be displayed here
                   </p>
@@ -239,7 +239,7 @@ export default function AdminDashboard() {
 
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
           {/* Recent Orders */}
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <div className="bg-white shadow-md rounded-xl overflow-hidden">
             <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
               <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
                 <ClipboardDocumentListIcon className="h-5 w-5 mr-2 text-amber-600" />
@@ -329,7 +329,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Popular Menu Items */}
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <div className="bg-white shadow-md rounded-xl overflow-hidden">
             <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
               <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
                 <QueueListIcon className="h-5 w-5 mr-2 text-amber-600" />

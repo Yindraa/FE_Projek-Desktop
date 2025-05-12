@@ -169,7 +169,7 @@ export default function OrdersQueue() {
             <select
               id="tabs"
               name="tabs"
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md"
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-xl"
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value)}
             >
@@ -221,7 +221,7 @@ export default function OrdersQueue() {
             filteredOrders.map((order) => (
               <div
                 key={order.id}
-                className="bg-white shadow overflow-hidden sm:rounded-lg"
+                className="bg-white shadow overflow-hidden sm:rounded-xl"
               >
                 <div className="px-4 py-5 sm:px-6 flex justify-between items-center bg-gray-50">
                   <div>
@@ -348,7 +348,7 @@ export default function OrdersQueue() {
               </div>
             ))
           ) : (
-            <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="bg-white shadow overflow-hidden sm:rounded-xl">
               <div className="px-4 py-5 sm:px-6 text-center text-gray-500">
                 No orders found in this category.
               </div>

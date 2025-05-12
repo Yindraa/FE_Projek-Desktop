@@ -131,10 +131,10 @@ export default function ChefDashboard() {
                 .map((_, index) => (
                   <div
                     key={index}
-                    className="bg-white rounded-lg shadow-md p-6 animate-pulse"
+                    className="bg-white rounded-xl shadow-md p-6 animate-pulse"
                   >
                     <div className="flex items-center">
-                      <div className="rounded-md bg-amber-200 h-12 w-12"></div>
+                      <div className="rounded-xl bg-amber-200 h-12 w-12"></div>
                       <div className="ml-5 w-full">
                         <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                         <div className="h-6 bg-gray-300 rounded w-1/2"></div>
@@ -145,12 +145,12 @@ export default function ChefDashboard() {
             : stats.map((item) => (
                 <div
                   key={item.name}
-                  className="bg-white overflow-hidden shadow-md rounded-lg transition-all duration-200 hover:shadow-lg"
+                  className="bg-white overflow-hidden shadow-md rounded-xl transition-all duration-200 hover:shadow-lg"
                 >
                   <div className="p-5">
                     <div className="flex items-center">
                       <div
-                        className={`flex-shrink-0 rounded-md p-3 ${
+                        className={`flex-shrink-0 rounded-xl p-3 ${
                           item.color.split(" ")[0]
                         }`}
                       >
@@ -178,7 +178,7 @@ export default function ChefDashboard() {
         </div>
 
         {/* Recent Orders */}
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <div className="bg-white shadow-md rounded-xl overflow-hidden">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
             <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
               <ClipboardDocumentListIcon className="h-5 w-5 mr-2 text-amber-600" />
@@ -199,7 +199,7 @@ export default function ChefDashboard() {
                 {recentOrders.map((order) => (
                   <div
                     key={order.id}
-                    className="bg-white shadow overflow-hidden sm:rounded-lg"
+                    className="bg-white shadow overflow-hidden sm:rounded-xl"
                   >
                     <div className="px-4 py-5 sm:px-6 flex justify-between items-center bg-gray-50">
                       <div>

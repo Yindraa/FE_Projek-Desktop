@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import PageTitle from "../../components/common/PageTitle";
 import {
   ClipboardDocumentListIcon,
   CurrencyDollarIcon,
@@ -88,11 +87,10 @@ export default function WaiterDashboard() {
 
   return (
     <DashboardLayout role="waiter">
-      <div className="animate-fadeIn">
-        <PageTitle
-          title="Waiter Dashboard"
-          subtitle="Overview of tables, orders, and sales"
-        />
+      <div className="p-6">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-6">
+          Waiter Dashboard
+        </h1>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 mb-8">
@@ -103,10 +101,10 @@ export default function WaiterDashboard() {
                 .map((_, index) => (
                   <div
                     key={index}
-                    className="bg-white rounded-lg shadow-md p-6 animate-pulse"
+                    className="bg-white rounded-xl shadow-md p-6 animate-pulse"
                   >
                     <div className="flex items-center">
-                      <div className="rounded-md bg-amber-200 h-12 w-12"></div>
+                      <div className="rounded-xl bg-amber-200 h-12 w-12"></div>
                       <div className="ml-5 w-full">
                         <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
                         <div className="h-6 bg-gray-300 rounded w-1/2"></div>
@@ -117,12 +115,12 @@ export default function WaiterDashboard() {
             : stats.map((item) => (
                 <div
                   key={item.name}
-                  className="bg-white overflow-hidden shadow-md rounded-lg transition-all duration-200 hover:shadow-lg"
+                  className="bg-white overflow-hidden shadow-md rounded-xl transition-all duration-200 hover:shadow-lg"
                 >
                   <div className="p-5">
                     <div className="flex items-center">
                       <div
-                        className={`flex-shrink-0 rounded-md p-3 ${
+                        className={`flex-shrink-0 rounded-xl p-3 ${
                           item.color.split(" ")[0]
                         }`}
                       >
@@ -150,7 +148,7 @@ export default function WaiterDashboard() {
         </div>
 
         {/* Recent Orders */}
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <div className="bg-white shadow-md rounded-xl overflow-hidden">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
             <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
               <ClipboardDocumentListIcon className="h-5 w-5 mr-2 text-amber-600" />
@@ -275,6 +273,42 @@ export default function WaiterDashboard() {
                 </table>
               </div>
             )}
+          </div>
+        </div>
+
+        {/* Tables Overview */}
+        <div className="mt-8 bg-white shadow-md rounded-xl overflow-hidden">
+          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
+            <h3 className="text-lg leading-6 font-medium text-gray-900">
+              Tables Overview
+            </h3>
+          </div>
+          <div className="p-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {[...Array(12)].map((_, i) => {
+                const status =
+                  i % 3 === 0
+                    ? "available"
+                    : i % 3 === 1
+                    ? "occupied"
+                    : "reserved";
+                return (
+                  <div
+                    key={i}
+                    className={`p-4 rounded-xl shadow text-center ${
+                      status === "available"
+                        ? "bg-green-100"
+                        : status === "occupied"
+                        ? "bg-red-100"
+                        : "bg-yellow-100"
+                    }`}
+                  >
+                    <p className="font-medium">Table {i + 1}</p>
+                    <p className="text-sm capitalize">{status}</p>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </div>
       </div>

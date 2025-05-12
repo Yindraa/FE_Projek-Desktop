@@ -27,12 +27,12 @@ export default function DeleteUserConfirmation({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: 9999 }}>
+    <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: 10 }}>
       <div className="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <div
-          className="fixed inset-0 bg-gray-800 bg-opacity-80 transition-opacity"
+          className="fixed inset-0 bg-black bg-opacity-25 transition-opacity"
           onClick={onClose}
-          style={{ zIndex: 9998 }}
+          style={{ zIndex: 9 }}
         ></div>
 
         <span
@@ -44,7 +44,7 @@ export default function DeleteUserConfirmation({
 
         <div
           className="inline-block transform overflow-hidden rounded-xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle"
-          style={{ position: "relative", zIndex: 9999 }}
+          style={{ position: "relative", zIndex: 10 }}
         >
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="sm:flex sm:items-start">
@@ -73,7 +73,7 @@ export default function DeleteUserConfirmation({
             <button
               type="button"
               disabled={isLoading}
-              className="inline-flex w-full justify-center rounded-lg border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+              className="inline-flex w-full justify-center  border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
               onClick={onConfirm}
             >
               {isLoading ? (
@@ -106,7 +106,7 @@ export default function DeleteUserConfirmation({
             </button>
             <button
               type="button"
-              className="mt-3 inline-flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              className="mt-3 inline-flex w-full justify-center  border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
               onClick={onClose}
             >
               Cancel

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import PageTitle from "../../components/common/PageTitle";
 import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 export default function Orders() {
@@ -148,14 +147,13 @@ export default function Orders() {
 
   return (
     <DashboardLayout role="waiter">
-      <div className="animate-fadeIn">
-        <PageTitle
-          title="Orders Management"
-          subtitle="View and manage customer orders"
-        />
+      <div className="p-6">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-6">
+          Orders Management
+        </h1>
 
         {/* Search and Filter */}
-        <div className="bg-white shadow-md rounded-lg mb-6 p-4">
+        <div className="bg-white shadow-md rounded-xl mb-6 p-4">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
             <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
               {/* Search */}
@@ -165,7 +163,7 @@ export default function Orders() {
                 </div>
                 <input
                   type="text"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
                   placeholder="Search orders..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -209,7 +207,7 @@ export default function Orders() {
             </div>
 
             {/* New Order Button */}
-            <button className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+            <button className="px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
               <PlusIcon className="-ml-1 mr-2 h-5 w-5 inline-block" />
               New Order
             </button>
@@ -223,7 +221,7 @@ export default function Orders() {
             <select
               id="tabs"
               name="tabs"
-              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm rounded-md"
+              className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm rounded-xl"
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value)}
             >
@@ -250,7 +248,7 @@ export default function Orders() {
             filteredOrders.map((order) => (
               <div
                 key={order.id}
-                className="bg-white shadow-md rounded-lg overflow-hidden"
+                className="bg-white shadow-md rounded-xl overflow-hidden"
               >
                 <div className="px-4 py-5 sm:px-6 flex justify-between items-center bg-gray-50">
                   <div>
@@ -346,7 +344,7 @@ export default function Orders() {
                 </div>
                 <div className="px-4 py-3 bg-gray-50 text-right sm:px-6 border-t border-gray-200">
                   <div className="flex justify-end space-x-3">
-                    <button className="px-3 py-1 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                    <button className="px-3 py-1 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50">
                       Edit Order
                     </button>
                     {order.status === "pending" && (
@@ -354,7 +352,7 @@ export default function Orders() {
                         onClick={() =>
                           handleStatusChange(order.id, "in-progress")
                         }
-                        className="px-3 py-1 border border-transparent text-sm font-medium rounded text-white bg-amber-600 hover:bg-amber-700"
+                        className="px-3 py-1 border border-transparent text-sm font-medium rounded-xl text-white bg-amber-600 hover:bg-amber-700"
                       >
                         Send to Kitchen
                       </button>
@@ -362,7 +360,7 @@ export default function Orders() {
                     {order.status === "in-progress" && (
                       <button
                         onClick={() => handleStatusChange(order.id, "served")}
-                        className="px-3 py-1 border border-transparent text-sm font-medium rounded text-white bg-green-600 hover:bg-green-700"
+                        className="px-3 py-1 border border-transparent text-sm font-medium rounded-xl text-white bg-green-600 hover:bg-green-700"
                       >
                         Mark as Served
                       </button>
@@ -372,13 +370,13 @@ export default function Orders() {
                         onClick={() =>
                           handleStatusChange(order.id, "pending-payment")
                         }
-                        className="px-3 py-1 border border-transparent text-sm font-medium rounded text-white bg-purple-600 hover:bg-purple-700"
+                        className="px-3 py-1 border border-transparent text-sm font-medium rounded-xl text-white bg-purple-600 hover:bg-purple-700"
                       >
                         Request Payment
                       </button>
                     )}
                     {order.status === "pending-payment" && (
-                      <button className="px-3 py-1 border border-transparent text-sm font-medium rounded text-white bg-blue-600 hover:bg-blue-700">
+                      <button className="px-3 py-1 border border-transparent text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700">
                         Process Payment
                       </button>
                     )}
@@ -387,7 +385,7 @@ export default function Orders() {
               </div>
             ))
           ) : (
-            <div className="bg-white shadow-md rounded-lg p-6 text-center">
+            <div className="bg-white shadow-md rounded-xl p-6 text-center">
               <p className="text-gray-500">
                 No orders found matching your criteria.
               </p>

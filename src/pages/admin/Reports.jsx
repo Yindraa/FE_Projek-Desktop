@@ -268,7 +268,7 @@ export default function Reports() {
                 <button
                   key={range}
                   onClick={() => setTimeRange(range)}
-                  className={`px-4 py-2 text-sm font-medium rounded-md ${
+                  className={`px-4 py-2 text-sm font-medium rounded-xl ${
                     timeRange === range
                       ? "bg-amber-600 text-white"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -292,7 +292,7 @@ export default function Reports() {
             </div>
             <button
               onClick={() => handlePrintReport("sales")}
-              className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+              className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
             >
               <PrinterIcon className="-ml-0.5 mr-2 h-4 w-4" />
               Print
@@ -302,7 +302,7 @@ export default function Reports() {
             {isLoading ? (
               <div className="animate-pulse h-64 bg-gray-200 rounded"></div>
             ) : (
-              <div className="h-64 bg-amber-50 rounded-lg flex items-center justify-center">
+              <div className="h-64 bg-amber-50 rounded-xl flex items-center justify-center">
                 <p className="text-gray-500">
                   Sales chart will be displayed here
                 </p>
@@ -322,11 +322,11 @@ export default function Reports() {
                 : salesData.map((item) => (
                     <div
                       key={item.name}
-                      className="bg-white overflow-hidden shadow rounded-lg"
+                      className="bg-white overflow-hidden shadow rounded-xl"
                     >
                       <div className="p-5">
                         <div className="flex items-center">
-                          <div className="flex-shrink-0 bg-amber-100 rounded-md p-3">
+                          <div className="flex-shrink-0 bg-amber-100 rounded-xl p-3">
                             <item.icon
                               className="h-6 w-6 text-amber-600"
                               aria-hidden="true"
@@ -364,7 +364,7 @@ export default function Reports() {
               </div>
               <button
                 onClick={() => handlePrintReport("items")}
-                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
               >
                 <PrinterIcon className="-ml-0.5 mr-2 h-4 w-4" />
                 Print
@@ -428,7 +428,7 @@ export default function Reports() {
               </div>
               <button
                 onClick={() => handlePrintReport("staff")}
-                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
               >
                 <PrinterIcon className="-ml-0.5 mr-2 h-4 w-4" />
                 Print

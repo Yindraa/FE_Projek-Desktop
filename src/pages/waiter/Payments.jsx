@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import PageTitle from "../../components/common/PageTitle";
 import {
   MagnifyingGlassIcon,
   PrinterIcon,
@@ -157,21 +156,18 @@ export default function Payments() {
 
   return (
     <DashboardLayout role="waiter">
-      <div className="animate-fadeIn">
-        <PageTitle
-          title="Payments"
-          subtitle="Process payments and view transaction history"
-        />
+      <div className="p-6">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-6">Payments</h1>
 
         {/* Search */}
-        <div className="bg-white shadow-md rounded-lg mb-6 p-4">
+        <div className="bg-white shadow-md rounded-xl mb-6 p-4">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
               <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
             </div>
             <input
               type="text"
-              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
+              className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
               placeholder="Search by order ID, table, or customer..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
@@ -181,7 +177,7 @@ export default function Payments() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Pending Payments */}
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <div className="bg-white shadow-md rounded-xl overflow-hidden">
             <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
               <h3 className="text-lg leading-6 font-medium text-gray-900">
                 Pending Payments
@@ -204,7 +200,7 @@ export default function Payments() {
                   {filteredPendingPayments.map((payment) => (
                     <div
                       key={payment.id}
-                      className={`border rounded-lg overflow-hidden cursor-pointer transition-colors ${
+                      className={`border rounded-xl overflow-hidden cursor-pointer transition-colors ${
                         selectedPayment?.id === payment.id
                           ? "border-amber-500 bg-amber-50"
                           : "border-gray-200 hover:bg-gray-50"
@@ -257,7 +253,7 @@ export default function Payments() {
 
           {/* Payment Processing or Recent Transactions */}
           {selectedPayment ? (
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+            <div className="bg-white shadow-md rounded-xl overflow-hidden">
               <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
                   Process Payment
@@ -272,7 +268,7 @@ export default function Payments() {
                     <h4 className="text-sm font-medium text-gray-500">
                       Order Summary
                     </h4>
-                    <div className="mt-2 border rounded-md overflow-hidden">
+                    <div className="mt-2 border rounded-xl overflow-hidden">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
                           <tr>
@@ -356,7 +352,7 @@ export default function Payments() {
                     </h4>
                     <div className="mt-2 grid grid-cols-3 gap-3">
                       <div
-                        className={`border rounded-md p-3 flex flex-col items-center cursor-pointer ${
+                        className={`border rounded-xl p-3 flex flex-col items-center cursor-pointer ${
                           paymentMethod === "cash"
                             ? "border-amber-500 bg-amber-50"
                             : "border-gray-200 hover:bg-gray-50"
@@ -369,7 +365,7 @@ export default function Payments() {
                         </span>
                       </div>
                       <div
-                        className={`border rounded-md p-3 flex flex-col items-center cursor-pointer ${
+                        className={`border rounded-xl p-3 flex flex-col items-center cursor-pointer ${
                           paymentMethod === "credit"
                             ? "border-amber-500 bg-amber-50"
                             : "border-gray-200 hover:bg-gray-50"
@@ -382,7 +378,7 @@ export default function Payments() {
                         </span>
                       </div>
                       <div
-                        className={`border rounded-md p-3 flex flex-col items-center cursor-pointer ${
+                        className={`border rounded-xl p-3 flex flex-col items-center cursor-pointer ${
                           paymentMethod === "qr"
                             ? "border-amber-500 bg-amber-50"
                             : "border-gray-200 hover:bg-gray-50"
@@ -399,13 +395,13 @@ export default function Payments() {
 
                   <div className="pt-4 flex justify-end space-x-3">
                     <button
-                      className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
+                      className="px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50"
                       onClick={() => setSelectedPayment(null)}
                     >
                       Cancel
                     </button>
                     <button
-                      className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
+                      className="px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
                       onClick={handleProcessPayment}
                       disabled={isProcessing}
                     >
@@ -442,7 +438,7 @@ export default function Payments() {
               </div>
             </div>
           ) : (
-            <div className="bg-white shadow-md rounded-lg overflow-hidden">
+            <div className="bg-white shadow-md rounded-xl overflow-hidden">
               <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
                 <h3 className="text-lg leading-6 font-medium text-gray-900">
                   Recent Transactions

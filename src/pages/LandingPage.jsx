@@ -15,13 +15,13 @@ export default function LandingPage() {
             <div className="flex space-x-4">
               <Link
                 to="/login"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-amber-800 bg-amber-100 hover:bg-amber-200"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-amber-800 bg-amber-100 hover:bg-amber-200"
               >
                 Sign In
               </Link>
               <Link
                 to="/register"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-800 hover:bg-amber-700"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-amber-800 hover:bg-amber-700"
               >
                 Get Started
               </Link>
@@ -46,7 +46,7 @@ export default function LandingPage() {
             <div className="rounded-md shadow">
               <Link
                 to="/register"
-                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-white bg-amber-800 hover:bg-amber-700 md:py-4 md:text-lg md:px-10"
+                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-amber-800 hover:bg-amber-700 md:py-4 md:text-lg md:px-10"
               >
                 Get Started
                 <ArrowRightIcon className="ml-2 h-5 w-5" />
@@ -55,7 +55,7 @@ export default function LandingPage() {
             <div className="mt-3 sm:mt-0 sm:ml-3">
               <Link
                 to="/login"
-                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-md text-amber-800 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
+                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-xl text-amber-800 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
               >
                 Sign In
               </Link>
@@ -170,7 +170,7 @@ export default function LandingPage() {
                 },
               ].map((feature) => (
                 <div key={feature.name} className="relative">
-                  <div className="absolute flex items-center justify-center h-12 w-12 rounded-md bg-amber-700 text-white">
+                  <div className="absolute flex items-center justify-center h-12 w-12 rounded-xl bg-amber-700 text-white">
                     {feature.icon}
                   </div>
                   <div className="ml-16">
@@ -233,7 +233,7 @@ export default function LandingPage() {
               ].map((person) => (
                 <div
                   key={person.name}
-                  className="bg-white rounded-lg shadow-lg overflow-hidden"
+                  className="bg-white rounded-xl shadow-xl overflow-hidden"
                 >
                   <img
                     className="h-48 w-full object-cover"
@@ -268,7 +268,7 @@ export default function LandingPage() {
               <div className="inline-flex rounded-md shadow">
                 <Link
                   to="/register"
-                  className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-amber-800 bg-white hover:bg-gray-50"
+                  className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-xl text-amber-800 bg-white hover:bg-gray-50"
                 >
                   Get started
                 </Link>
@@ -276,7 +276,7 @@ export default function LandingPage() {
               <div className="ml-3 inline-flex">
                 <Link
                   to="/login"
-                  className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-md text-white bg-amber-900 hover:bg-amber-950"
+                  className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-amber-900 hover:bg-amber-950"
                 >
                   Sign in
                 </Link>

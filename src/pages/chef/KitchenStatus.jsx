@@ -121,7 +121,7 @@ export default function KitchenStatus() {
         />
 
         {/* Kitchen Stations */}
-        <div className="bg-white shadow-md rounded-lg overflow-hidden mb-8">
+        <div className="bg-white shadow-md rounded-xl overflow-hidden mb-8">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
             <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
               <FireIcon className="h-5 w-5 mr-2 text-amber-600" />
@@ -145,7 +145,7 @@ export default function KitchenStatus() {
                 {kitchenStations.map((station) => (
                   <div
                     key={station.id}
-                    className={`border rounded-lg overflow-hidden shadow-sm ${
+                    className={`border rounded-xl overflow-hidden shadow-sm ${
                       station.status === "operational"
                         ? "border-green-200"
                         : station.status === "busy"
@@ -223,7 +223,7 @@ export default function KitchenStatus() {
                                 "operational"
                               )
                             }
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-xl shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
                           >
                             Mark Operational
                           </button>
@@ -233,7 +233,7 @@ export default function KitchenStatus() {
                             onClick={() =>
                               handleStationStatusChange(station.id, "busy")
                             }
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-xl shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
                           >
                             Mark Busy
                           </button>
@@ -246,7 +246,7 @@ export default function KitchenStatus() {
                                 "maintenance"
                               )
                             }
-                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                            className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-xl shadow-sm text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
                           >
                             Needs Maintenance
                           </button>
@@ -261,7 +261,7 @@ export default function KitchenStatus() {
         </div>
 
         {/* Inventory Status */}
-        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+        <div className="bg-white shadow-md rounded-xl overflow-hidden">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
             <h3 className="text-lg leading-6 font-medium text-gray-900 flex items-center">
               <ExclamationTriangleIcon className="h-5 w-5 mr-2 text-amber-600" />

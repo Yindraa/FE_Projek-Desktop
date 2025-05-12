@@ -139,12 +139,12 @@ export default function MenuItemForm({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: 9999 }}>
+    <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: 10 }}>
       <div className="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <div
-          className="fixed inset-0 bg-gray-800 bg-opacity-80 transition-opacity"
+          className="fixed inset-0 bg-black bg-opacity-25 transition-opacity"
           onClick={onClose}
-          style={{ zIndex: 9998 }}
+          style={{ zIndex: 9 }}
         ></div>
 
         <span
@@ -156,7 +156,7 @@ export default function MenuItemForm({
 
         <div
           className="inline-block transform overflow-hidden rounded-xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle"
-          style={{ position: "relative", zIndex: 9999 }}
+          style={{ position: "relative", zIndex: 10 }}
         >
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="flex items-start justify-between">
@@ -180,7 +180,7 @@ export default function MenuItemForm({
                   Item Image
                 </label>
                 <div className="mt-1 flex items-center space-x-4">
-                  <div className="h-24 w-24 overflow-hidden rounded-lg border border-gray-300 bg-gray-100">
+                  <div className="h-24 w-24 overflow-hidden rounded-xl border border-gray-300 bg-gray-100">
                     {formData.imagePreview ? (
                       <img
                         src={formData.imagePreview || "/placeholder.svg"}
@@ -196,7 +196,7 @@ export default function MenuItemForm({
                   <div>
                     <label
                       htmlFor="image-upload"
-                      className="cursor-pointer rounded-lg bg-white px-3 py-2 text-sm font-medium text-amber-600 shadow-sm hover:bg-amber-50 focus-within:outline-none"
+                      className="cursor-pointer rounded-xl bg-white px-3 py-2 text-sm font-medium text-amber-600 shadow-sm hover:bg-amber-50 focus-within:outline-none"
                     >
                       <span>Upload a file</span>
                       <input
@@ -231,7 +231,7 @@ export default function MenuItemForm({
                   id="name"
                   value={formData.name}
                   onChange={handleChange}
-                  className={`mt-1 block w-full rounded-lg border ${
+                  className={`mt-1 block w-full rounded-xl border ${
                     errors.name ? "border-red-300" : "border-gray-300"
                   } px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm`}
                 />
@@ -254,7 +254,7 @@ export default function MenuItemForm({
                   rows={3}
                   value={formData.description}
                   onChange={handleChange}
-                  className={`mt-1 block w-full rounded-lg border ${
+                  className={`mt-1 block w-full rounded-xl border ${
                     errors.description ? "border-red-300" : "border-gray-300"
                   } px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm`}
                 />
@@ -278,7 +278,7 @@ export default function MenuItemForm({
                   name="category"
                   value={formData.category}
                   onChange={handleChange}
-                  className={`mt-1 block w-full rounded-lg border ${
+                  className={`mt-1 block w-full rounded-xl border ${
                     errors.category ? "border-red-300" : "border-gray-300"
                   } bg-white px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm`}
                 >
@@ -308,7 +308,7 @@ export default function MenuItemForm({
                   id="price"
                   value={formData.price}
                   onChange={handleChange}
-                  className={`mt-1 block w-full rounded-lg border ${
+                  className={`mt-1 block w-full rounded-xl border ${
                     errors.price ? "border-red-300" : "border-gray-300"
                   } px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm`}
                 />
@@ -339,7 +339,7 @@ export default function MenuItemForm({
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="inline-flex w-full justify-center rounded-lg border border-transparent bg-amber-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:col-start-2 sm:text-sm"
+                  className="inline-flex w-full justify-center rounded-xl border border-transparent bg-amber-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:col-start-2 sm:text-sm"
                 >
                   {isLoading ? (
                     <span className="flex items-center">
@@ -374,7 +374,7 @@ export default function MenuItemForm({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="mt-3 inline-flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>

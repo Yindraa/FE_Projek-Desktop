@@ -16,6 +16,9 @@ import MenuManagement from "./pages/admin/MenuManagement";
 import UserManagement from "./pages/admin/UserManagement";
 import Reports from "./pages/admin/Reports";
 import WaiterDashboard from "./pages/waiter/WaiterDashboard";
+import Tables from "./pages/waiter/Tables";
+import Orders from "./pages/waiter/Orders";
+import Payments from "./pages/waiter/Payments";
 import ChefDashboard from "./pages/chef/ChefDashboard";
 import OrdersQueue from "./pages/chef/OrdersQueue";
 import KitchenStatus from "./pages/chef/KitchenStatus";
@@ -108,6 +111,38 @@ function App() {
               <Navigate to="/login" />
             ) : (
               <Reports />
+            )
+          }
+        />
+
+        {/* Waiter routes */}
+        <Route
+          path="/waiter/tables"
+          element={
+            !currentUser || userRole !== "waiter" ? (
+              <Navigate to="/login" />
+            ) : (
+              <Tables />
+            )
+          }
+        />
+        <Route
+          path="/waiter/orders"
+          element={
+            !currentUser || userRole !== "waiter" ? (
+              <Navigate to="/login" />
+            ) : (
+              <Orders />
+            )
+          }
+        />
+        <Route
+          path="/waiter/payments"
+          element={
+            !currentUser || userRole !== "waiter" ? (
+              <Navigate to="/login" />
+            ) : (
+              <Payments />
             )
           }
         />

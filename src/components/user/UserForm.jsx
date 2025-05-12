@@ -148,12 +148,12 @@ export default function UserForm({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: 9999 }}>
+    <div className="fixed inset-0 overflow-y-auto" style={{ zIndex: 10 }}>
       <div className="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
         <div
-          className="fixed inset-0 bg-gray-800 bg-opacity-80 transition-opacity"
+          className="fixed inset-0 bg-black bg-opacity-25 transition-opacity"
           onClick={onClose}
-          style={{ zIndex: 9998 }}
+          style={{ zIndex: 9 }}
         ></div>
 
         <span
@@ -165,7 +165,7 @@ export default function UserForm({
 
         <div
           className="inline-block transform overflow-hidden rounded-xl bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle"
-          style={{ position: "relative", zIndex: 9999 }}
+          style={{ position: "relative", zIndex: 10 }}
         >
           <div className="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div className="flex items-start justify-between">
@@ -204,7 +204,7 @@ export default function UserForm({
                       value={formData.username}
                       onChange={handleChange}
                       disabled={initialData && !isEditMode}
-                      className={`mt-1 block w-full rounded-lg border ${
+                      className={`mt-1 block w-full rounded-xl border ${
                         errors.username ? "border-red-300" : "border-gray-300"
                       } px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm ${
                         initialData && !isEditMode ? "bg-gray-100" : ""
@@ -232,7 +232,7 @@ export default function UserForm({
                       value={formData.firstName}
                       onChange={handleChange}
                       disabled={initialData && !isEditMode}
-                      className={`mt-1 block w-full rounded-lg border ${
+                      className={`mt-1 block w-full rounded-xl border ${
                         errors.firstName ? "border-red-300" : "border-gray-300"
                       } px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm ${
                         initialData && !isEditMode ? "bg-gray-100" : ""
@@ -260,7 +260,7 @@ export default function UserForm({
                       value={formData.lastName}
                       onChange={handleChange}
                       disabled={initialData && !isEditMode}
-                      className={`mt-1 block w-full rounded-lg border ${
+                      className={`mt-1 block w-full rounded-xl border ${
                         errors.lastName ? "border-red-300" : "border-gray-300"
                       } px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm ${
                         initialData && !isEditMode ? "bg-gray-100" : ""
@@ -288,7 +288,7 @@ export default function UserForm({
                       value={formData.email}
                       onChange={handleChange}
                       disabled={initialData && !isEditMode}
-                      className={`mt-1 block w-full rounded-lg border ${
+                      className={`mt-1 block w-full rounded-xl border ${
                         errors.email ? "border-red-300" : "border-gray-300"
                       } px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm ${
                         initialData && !isEditMode ? "bg-gray-100" : ""
@@ -316,7 +316,7 @@ export default function UserForm({
                       value={formData.phoneNumber}
                       onChange={handleChange}
                       disabled={initialData && !isEditMode}
-                      className={`mt-1 block w-full rounded-lg border ${
+                      className={`mt-1 block w-full rounded-xl border ${
                         errors.phoneNumber
                           ? "border-red-300"
                           : "border-gray-300"
@@ -347,7 +347,7 @@ export default function UserForm({
                           id="password"
                           value={formData.password}
                           onChange={handleChange}
-                          className={`mt-1 block w-full rounded-lg border ${
+                          className={`mt-1 block w-full rounded-xl border ${
                             errors.password
                               ? "border-red-300"
                               : "border-gray-300"
@@ -373,7 +373,7 @@ export default function UserForm({
                           id="confirmPassword"
                           value={formData.confirmPassword}
                           onChange={handleChange}
-                          className={`mt-1 block w-full rounded-lg border ${
+                          className={`mt-1 block w-full rounded-xl border ${
                             errors.confirmPassword
                               ? "border-red-300"
                               : "border-gray-300"
@@ -403,7 +403,7 @@ export default function UserForm({
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className={`mt-1 block w-full rounded-lg border ${
+                  className={`mt-1 block w-full rounded-xl border ${
                     errors.role ? "border-red-300" : "border-gray-300"
                   } bg-white px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm`}
                 >
@@ -440,7 +440,7 @@ export default function UserForm({
                 <button
                   type="submit"
                   disabled={isLoading}
-                  className="inline-flex w-full justify-center rounded-lg border border-transparent bg-amber-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:col-start-2 sm:text-sm"
+                  className="inline-flex w-full justify-center rounded-xl border border-transparent bg-amber-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:col-start-2 sm:text-sm"
                 >
                   {isLoading ? (
                     <span className="flex items-center">
@@ -475,7 +475,7 @@ export default function UserForm({
                 <button
                   type="button"
                   onClick={onClose}
-                  className="mt-3 inline-flex w-full justify-center rounded-lg border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
+                  className="mt-3 inline-flex w-full justify-center rounded-xl border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 sm:col-start-1 sm:mt-0 sm:text-sm"
                 >
                   Cancel
                 </button>

@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
-import PageTitle from "../../components/common/PageTitle";
 import { PlusIcon } from "@heroicons/react/24/outline";
 
 export default function Tables() {
@@ -88,14 +87,13 @@ export default function Tables() {
 
   return (
     <DashboardLayout role="waiter">
-      <div className="animate-fadeIn">
-        <PageTitle
-          title="Tables Overview"
-          subtitle="Manage restaurant tables and orders"
-        />
+      <div className="p-6">
+        <h1 className="text-2xl font-semibold text-gray-900 mb-6">
+          Tables Overview
+        </h1>
 
         {/* Tables Grid */}
-        <div className="bg-white shadow-md rounded-lg overflow-hidden mb-6">
+        <div className="bg-white shadow-md rounded-xl overflow-hidden mb-6">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
               Tables Layout
@@ -116,7 +114,7 @@ export default function Tables() {
                   <button
                     key={table.id}
                     onClick={() => handleTableClick(table.id)}
-                    className={`p-4 rounded-lg shadow text-center ${
+                    className={`p-4 rounded-xl shadow text-center ${
                       table.status === "available"
                         ? "bg-green-100 hover:bg-green-200"
                         : table.status === "occupied"
@@ -144,7 +142,7 @@ export default function Tables() {
 
         {/* Selected Table Details */}
         {selectedTable && (
-          <div className="bg-white shadow-md rounded-lg overflow-hidden">
+          <div className="bg-white shadow-md rounded-xl overflow-hidden">
             <div className="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
               <h3 className="text-lg leading-6 font-medium text-gray-900">
                 Table {selectedTable.id} -{" "}
@@ -152,7 +150,7 @@ export default function Tables() {
                   selectedTable.status.slice(1)}
               </h3>
               {selectedTable.status === "available" && (
-                <button className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                <button className="px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
                   <PlusIcon className="-ml-1 mr-2 h-5 w-5 inline-block" />
                   New Order
                 </button>
@@ -198,16 +196,16 @@ export default function Tables() {
                       </div>
                     </div>
                     <div className="mt-3 flex space-x-2">
-                      <button className="px-3 py-1 border border-gray-300 text-sm font-medium rounded text-gray-700 bg-white hover:bg-gray-50">
+                      <button className="px-3 py-1 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50">
                         View Details
                       </button>
                       {order.status === "served" && (
-                        <button className="px-3 py-1 border border-transparent text-sm font-medium rounded text-white bg-amber-600 hover:bg-amber-700">
+                        <button className="px-3 py-1 border border-transparent text-sm font-medium rounded-xl text-white bg-amber-600 hover:bg-amber-700">
                           Process Payment
                         </button>
                       )}
                       {order.status === "in-progress" && (
-                        <button className="px-3 py-1 border border-transparent text-sm font-medium rounded text-white bg-green-600 hover:bg-green-700">
+                        <button className="px-3 py-1 border border-transparent text-sm font-medium rounded-xl text-white bg-green-600 hover:bg-green-700">
                           Mark as Served
                         </button>
                       )}
@@ -226,7 +224,7 @@ export default function Tables() {
                 <p className="text-sm text-gray-500">
                   This table is available for new customers.
                 </p>
-                <button className="mt-2 w-full px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                <button className="mt-2 w-full px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
                   Seat Customers
                 </button>
               </div>
@@ -238,10 +236,10 @@ export default function Tables() {
                   This table is reserved for upcoming customers.
                 </p>
                 <div className="mt-2 flex space-x-2">
-                  <button className="flex-1 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                  <button className="flex-1 px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
                     Seat Customers
                   </button>
-                  <button className="flex-1 px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
+                  <button className="flex-1 px-4 py-2 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500">
                     Cancel Reservation
                   </button>
                 </div>
