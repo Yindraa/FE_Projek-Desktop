@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
+import OrderDetailsModal from "../../components/waiter/OrderDetailsModal";
+import OrderActionsMenu from "../../components/waiter/OrderActionsMenu";
+import EditOrderModal from "../../components/waiter/EditOrderModal";
 import {
   ClipboardDocumentListIcon,
   CurrencyDollarIcon,
@@ -12,6 +15,9 @@ export default function WaiterDashboard() {
   const [stats, setStats] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isEditOrderModalOpen, setIsEditOrderModalOpen] = useState(false);
 
   useEffect(() => {
     // Simulate API call with mock data
@@ -42,37 +48,83 @@ export default function WaiterDashboard() {
           },
         ]);
 
-        // Mock recent orders data
+        // Mock recent orders data with more detailed information
         setRecentOrders([
           {
             id: "ORD-001",
             table: 5,
-            items: 4,
-            total: "$45.80",
+            customer: "Walk-in",
+            items: [
+              {
+                name: "Beef Burger",
+                quantity: 2,
+                price: 12.99,
+                notes: "No pickles",
+              },
+              { name: "Caesar Salad", quantity: 1, price: 8.99, notes: "" },
+              { name: "Iced Tea", quantity: 1, price: 3.99, notes: "" },
+            ],
+            itemCount: 4,
+            total: "$38.96",
             status: "served",
             time: "10:15 AM",
           },
           {
             id: "ORD-002",
             table: 3,
-            items: 3,
-            total: "$32.50",
+            customer: "John Smith",
+            items: [
+              {
+                name: "Margherita Pizza",
+                quantity: 1,
+                price: 14.99,
+                notes: "Extra cheese",
+              },
+              {
+                name: "Chicken Wings",
+                quantity: 2,
+                price: 9.99,
+                notes: "Spicy",
+              },
+            ],
+            itemCount: 3,
+            total: "$34.97",
             status: "in-progress",
             time: "10:30 AM",
           },
           {
             id: "ORD-003",
             table: 8,
-            items: 2,
-            total: "$24.75",
+            customer: "Sarah Johnson",
+            items: [
+              {
+                name: "Spaghetti Carbonara",
+                quantity: 1,
+                price: 16.99,
+                notes: "",
+              },
+              { name: "Tiramisu", quantity: 1, price: 7.99, notes: "" },
+            ],
+            itemCount: 2,
+            total: "$24.98",
             status: "pending-payment",
             time: "10:40 AM",
           },
           {
             id: "ORD-004",
             table: 1,
-            items: 2,
-            total: "$24.00",
+            customer: "Walk-in",
+            items: [
+              {
+                name: "Beef Burger",
+                quantity: 1,
+                price: 12.99,
+                notes: "No onions",
+              },
+              { name: "French Fries", quantity: 1, price: 4.99, notes: "" },
+            ],
+            itemCount: 2,
+            total: "$17.98",
             status: "pending",
             time: "10:45 AM",
           },
@@ -84,6 +136,54 @@ export default function WaiterDashboard() {
 
     loadDashboardData();
   }, []);
+
+  const handleViewOrder = (order) => {
+    setSelectedOrder(order);
+    setIsOrderModalOpen(true);
+  };
+
+  const handleMarkAsServed = (orderId) => {
+    // In a real app, you would call an API to update the order status
+    setRecentOrders(
+      recentOrders.map((order) =>
+        order.id === orderId ? { ...order, status: "served" } : order
+      )
+    );
+  };
+
+  const handleAddItems = (order) => {
+    console.log("Adding items to order:", order); // Debug log
+    setSelectedOrder(order);
+    setIsEditOrderModalOpen(true);
+  };
+
+  const handleUpdateOrder = (updatedOrder) => {
+    console.log("Updating order:", updatedOrder); // Debug log
+
+    // In a real app, you would call an API to update the order
+    setRecentOrders(
+      recentOrders.map((order) => {
+        if (order.id === updatedOrder.id) {
+          // Update the order with new data
+          return {
+            ...order,
+            items: updatedOrder.items,
+            itemCount: updatedOrder.items.reduce(
+              (total, item) => total + item.quantity,
+              0
+            ),
+            total:
+              typeof updatedOrder.total === "string"
+                ? updatedOrder.total
+                : `$${updatedOrder.total.toFixed(2)}`,
+          };
+        }
+        return order;
+      })
+    );
+
+    setIsEditOrderModalOpen(false);
+  };
 
   return (
     <DashboardLayout role="waiter">
@@ -223,7 +323,7 @@ export default function WaiterDashboard() {
                           Table {order.table}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {order.items}
+                          {order.itemCount || order.items.length}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {order.total}
@@ -253,19 +353,23 @@ export default function WaiterDashboard() {
                           {order.time}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button className="text-amber-600 hover:text-amber-900 mr-2">
-                            View
-                          </button>
-                          {order.status === "pending-payment" && (
-                            <button className="text-green-600 hover:text-green-900">
-                              Process Payment
+                          <div className="flex justify-end items-center space-x-2">
+                            <button
+                              className="text-amber-600 hover:text-amber-900"
+                              onClick={() => handleViewOrder(order)}
+                            >
+                              View
                             </button>
-                          )}
-                          {order.status === "in-progress" && (
-                            <button className="text-green-600 hover:text-green-900">
-                              Mark as Served
-                            </button>
-                          )}
+
+                            <OrderActionsMenu
+                              order={order}
+                              onView={() => handleViewOrder(order)}
+                              onMarkAsServed={() =>
+                                handleMarkAsServed(order.id)
+                              }
+                              onAddItems={() => handleAddItems(order)}
+                            />
+                          </div>
                         </td>
                       </tr>
                     ))}
@@ -312,6 +416,21 @@ export default function WaiterDashboard() {
           </div>
         </div>
       </div>
+
+      {/* Order Details Modal */}
+      <OrderDetailsModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        order={selectedOrder}
+      />
+
+      {/* Edit Order Modal */}
+      <EditOrderModal
+        isOpen={isEditOrderModalOpen}
+        onClose={() => setIsEditOrderModalOpen(false)}
+        order={selectedOrder}
+        onUpdateOrder={handleUpdateOrder}
+      />
     </DashboardLayout>
   );
 }
