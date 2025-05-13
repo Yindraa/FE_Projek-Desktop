@@ -57,23 +57,15 @@ export default function RegisterPage() {
       setError("");
       setLoading(true);
 
-      // Append role to email if not already present
-      let email = formData.email;
-      if (
-        !email.includes("@admin") &&
-        !email.includes("@chef") &&
-        !email.includes("@waiter")
-      ) {
-        email = email.split("@")[0] + `@${formData.role}.com`;
-      }
-
+      // Use the email as provided by the user, without modification
       await register({
         username: formData.username,
         firstName: formData.firstName,
         lastName: formData.lastName,
-        email: email,
+        email: formData.email,
         phoneNumber: formData.phoneNumber,
         password: formData.password,
+        role: formData.role, // Pass the role directly from the dropdown
       });
 
       setSuccess("Account created successfully! You can now sign in.");
@@ -258,10 +250,6 @@ export default function RegisterPage() {
                 value={formData.email}
                 onChange={handleChange}
               />
-              <p className="mt-1 text-xs text-gray-500">
-                Your role will be appended to your email if not already included
-                (e.g., user@waiter.com)
-              </p>
             </div>
 
             <div className="mt-6">

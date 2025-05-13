@@ -135,7 +135,7 @@ export default function Reports() {
     switch (reportType) {
       case "sales":
         contentToPrint = salesReportRef.current;
-        title = "Sales Report";
+        title = "Sales Overview";
         break;
       case "items":
         contentToPrint = itemsReportRef.current;
@@ -153,64 +153,250 @@ export default function Reports() {
 
     // Create a new window for printing
     const printWindow = window.open("", "_blank");
+    const currentDate = new Date().toLocaleDateString("en-US", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    });
 
-    // Add content to the new window
+    const timeRangeText =
+      timeRange.charAt(0).toUpperCase() + timeRange.slice(1);
+
+    // Generate sales cards HTML for print
+    let salesCardsHtml = "";
+    if (reportType === "sales") {
+      salesCardsHtml = `
+        <div class="sales-metrics">
+          ${salesData
+            .map(
+              (item) => `
+            <div class="metric-card">
+              <div class="metric-icon">${getIconForPrint(item.name)}</div>
+              <div class="metric-content">
+                <h3>${item.name}</h3>
+                <p class="metric-value">${item.value}</p>
+              </div>
+            </div>
+          `
+            )
+            .join("")}
+        </div>
+      `;
+    }
+
+    // Add content to the new window with improved styling
     printWindow.document.write(`
       <html>
         <head>
-          <title>${title} - ${
-      timeRange.charAt(0).toUpperCase() + timeRange.slice(1)
-    }</title>
+          <title>${title} - ${timeRangeText}</title>
           <style>
+            @media print {
+              @page {
+                size: portrait;
+                margin: 0.5in;
+              }
+            }
+            
             body {
-              font-family: Arial, sans-serif;
+              font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+              color: #333;
+              line-height: 1.5;
+              padding: 0;
+              margin: 0;
+              background: white;
+            }
+            
+            .container {
+              max-width: 100%;
+              margin: 0 auto;
               padding: 20px;
             }
+            
             .report-header {
               text-align: center;
-              margin-bottom: 20px;
+              margin-bottom: 30px;
+              padding-bottom: 15px;
+              border-bottom: 2px solid #f59e0b;
             }
+            
             .report-header h1 {
-              margin-bottom: 5px;
+              margin: 0 0 5px 0;
+              color: #b45309;
+              font-size: 28px;
             }
+            
             .report-header p {
               color: #666;
-              margin-top: 0;
+              margin: 5px 0;
+              font-size: 16px;
             }
+            
+            .report-header .restaurant-name {
+              font-size: 20px;
+              font-weight: bold;
+              margin-bottom: 5px;
+            }
+            
+            .report-meta {
+              display: flex;
+              justify-content: space-between;
+              margin-bottom: 20px;
+              font-size: 14px;
+              color: #666;
+            }
+            
             table {
               width: 100%;
               border-collapse: collapse;
-              margin-top: 20px;
+              margin: 20px 0;
+              font-size: 14px;
             }
+            
             th, td {
-              border: 1px solid #ddd;
-              padding: 8px;
+              padding: 12px 15px;
               text-align: left;
+              border-bottom: 1px solid #ddd;
             }
+            
             th {
-              background-color: #f2f2f2;
+              background-color: #f8fafc;
+              font-weight: 600;
+              color: #4b5563;
+              border-bottom: 2px solid #e5e7eb;
             }
+            
             tr:nth-child(even) {
-              background-color: #f9f9f9;
+              background-color: #f9fafb;
             }
-            .print-date {
+            
+            tr:hover {
+              background-color: #f3f4f6;
+            }
+            
+            .text-right {
               text-align: right;
+            }
+            
+            .print-footer {
+              margin-top: 40px;
+              text-align: center;
               font-size: 12px;
-              color: #666;
-              margin-top: 30px;
+              color: #6b7280;
+              border-top: 1px solid #e5e7eb;
+              padding-top: 15px;
+            }
+            
+            /* Sales metrics styling */
+            .sales-metrics {
+              display: flex;
+              flex-wrap: wrap;
+              gap: 20px;
+              justify-content: space-between;
+              margin: 20px 0;
+            }
+            
+            .metric-card {
+              flex: 1 1 200px;
+              display: flex;
+              align-items: center;
+              padding: 15px;
+              background-color: #fff;
+              border: 1px solid #e5e7eb;
+              border-radius: 8px;
+              box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            }
+            
+            .metric-icon {
+              width: 40px;
+              height: 40px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              background-color: #fef3c7;
+              border-radius: 8px;
+              margin-right: 15px;
+              color: #b45309;
+            }
+            
+            .metric-content h3 {
+              margin: 0 0 5px 0;
+              font-size: 14px;
+              color: #6b7280;
+            }
+            
+            .metric-value {
+              margin: 0;
+              font-size: 20px;
+              font-weight: bold;
+              color: #1f2937;
+            }
+            
+            /* Chart placeholder */
+            .chart-placeholder {
+              height: 250px;
+              background-color: #f9fafb;
+              border: 1px dashed #d1d5db;
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin: 20px 0;
+              color: #6b7280;
+            }
+            
+            /* Staff table specific */
+            .staff-table .staff-name {
+              display: flex;
+              align-items: center;
+            }
+            
+            .staff-avatar {
+              width: 30px;
+              height: 30px;
+              border-radius: 50%;
+              margin-right: 10px;
+              background-color: #f3f4f6;
+            }
+            
+            .highlight {
+              color: #b45309;
+              font-weight: 600;
             }
           </style>
         </head>
         <body>
-          <div class="report-header">
-            <h1>${title}</h1>
-            <p>Time Range: ${
-              timeRange.charAt(0).toUpperCase() + timeRange.slice(1)
-            }</p>
-          </div>
-          ${contentToPrint.outerHTML}
-          <div class="print-date">
-            Printed on: ${new Date().toLocaleString()}
+          <div class="container">
+            <div class="report-header">
+              <div class="restaurant-name">DineFlow Restaurant</div>
+              <h1>${title}</h1>
+              <p>Time Range: ${timeRangeText}</p>
+            </div>
+            
+            <div class="report-meta">
+              <div>Generated on: ${currentDate}</div>
+              <div>Report ID: REP-${Math.floor(Math.random() * 10000)
+                .toString()
+                .padStart(4, "0")}</div>
+            </div>
+            
+            ${
+              reportType === "sales"
+                ? `
+              <div class="chart-placeholder">
+                <p>Sales trend visualization would appear here</p>
+              </div>
+              ${salesCardsHtml}
+            `
+                : ""
+            }
+            
+            ${contentToPrint.outerHTML}
+            
+            <div class="print-footer">
+              <p>This report is generated automatically by DineFlow Restaurant Management System.</p>
+              <p>© ${new Date().getFullYear()} DineFlow. All rights reserved.</p>
+            </div>
           </div>
         </body>
       </html>
@@ -223,6 +409,22 @@ export default function Reports() {
       printWindow.print();
       // printWindow.close(); // Uncomment to auto-close after print dialog
     };
+  };
+
+  // Helper function to get icon HTML for print
+  const getIconForPrint = (itemName) => {
+    switch (itemName) {
+      case "Total Sales":
+        return '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>';
+      case "Average Order":
+        return '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" /></svg>';
+      case "Orders":
+        return '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>';
+      case "Customers":
+        return '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" /></svg>';
+      default:
+        return "";
+    }
   };
 
   return (
@@ -474,7 +676,8 @@ export default function Reports() {
                                 className="h-10 w-10 rounded-full"
                                 src={
                                   staff.avatar ||
-                                  "/placeholder.svg?height=40&width=40"
+                                  "/placeholder.svg?height=40&width=40" ||
+                                  "/placeholder.svg"
                                 }
                                 alt=""
                               />

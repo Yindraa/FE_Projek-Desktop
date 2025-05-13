@@ -8,11 +8,22 @@ import {
   UserCircleIcon,
   XMarkIcon,
   UserIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 
 export default function Header({ setSidebarOpen, user, onLogout }) {
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [showLogoutConfirmation, setShowLogoutConfirmation] = useState(false);
+
+  const handleLogoutClick = () => {
+    setShowLogoutConfirmation(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutConfirmation(false);
+    onLogout();
+  };
 
   return (
     <header className="bg-white shadow z-5">
@@ -91,7 +102,7 @@ export default function Header({ setSidebarOpen, user, onLogout }) {
                   <Menu.Item>
                     {({ active }) => (
                       <button
-                        onClick={onLogout}
+                        onClick={handleLogoutClick}
                         className={`${
                           active ? "bg-gray-100" : ""
                         } block w-full text-left px-4 py-2 text-sm text-gray-700`}
@@ -149,7 +160,7 @@ export default function Header({ setSidebarOpen, user, onLogout }) {
                 </label>
                 <input
                   type="email"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-xl shadow-sm focus:outline-none focus:ring-amber-500 focus:border-amber-500"
                   defaultValue={user?.email || "user@example.com"}
                 />
               </div>
@@ -335,6 +346,49 @@ export default function Header({ setSidebarOpen, user, onLogout }) {
               </button>
               <button className="px-4 py-2 bg-amber-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-amber-700">
                 Save Changes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-25 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-full max-w-md mx-4">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-gray-800">Sign Out</h2>
+              <button
+                onClick={() => setShowLogoutConfirmation(false)}
+                className="text-gray-500 hover:text-gray-700"
+              >
+                <XMarkIcon className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="py-3">
+              <div className="flex items-center justify-center mb-4">
+                <div className="h-12 w-12 rounded-full bg-amber-100 flex items-center justify-center">
+                  <ExclamationTriangleIcon className="h-6 w-6 text-amber-600" />
+                </div>
+              </div>
+              <p className="text-center text-gray-700">
+                Are you sure you want to sign out?
+              </p>
+            </div>
+
+            <div className="mt-6 flex justify-end space-x-3">
+              <button
+                onClick={() => setShowLogoutConfirmation(false)}
+                className="px-4 py-2 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="px-4 py-2 bg-amber-600 border border-transparent rounded-xl text-sm font-medium text-white hover:bg-amber-700"
+              >
+                Sign Out
               </button>
             </div>
           </div>

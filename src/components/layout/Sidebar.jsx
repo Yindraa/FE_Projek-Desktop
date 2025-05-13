@@ -1,11 +1,15 @@
+// Sidebar.jsx
 "use client";
 import {
   HomeIcon,
   UsersIcon,
-  QueueListIcon,
   ChartBarIcon,
   FireIcon,
   ClipboardDocumentListIcon,
+  TableCellsIcon,
+  ShoppingCartIcon,
+  CreditCardIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import Logo from "../common/Logo";
 import { Link, useLocation } from "react-router-dom";
@@ -14,15 +18,15 @@ import { Link, useLocation } from "react-router-dom";
 const navigation = {
   admin: [
     { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
-    { name: "Menu Management", href: "/admin/menu", icon: QueueListIcon },
+    { name: "Menu Management", href: "/admin/menu", icon: DocumentTextIcon },
     { name: "User Management", href: "/admin/users", icon: UsersIcon },
     { name: "Reports", href: "/admin/reports", icon: ChartBarIcon },
   ],
   waiter: [
     { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
-    { name: "Tables", href: "/waiter/tables", icon: QueueListIcon },
-    { name: "Orders", href: "/waiter/orders", icon: QueueListIcon },
-    { name: "Payments", href: "/waiter/payments", icon: UsersIcon },
+    { name: "Tables", href: "/waiter/tables", icon: TableCellsIcon },
+    { name: "Orders", href: "/waiter/orders", icon: ShoppingCartIcon },
+    { name: "Payments", href: "/waiter/payments", icon: CreditCardIcon },
   ],
   chef: [
     { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
@@ -65,6 +69,12 @@ export default function Sidebar({ sidebarOpen, setSidebarOpen, role }) {
                     : "text-amber-100 hover:bg-amber-700",
                   "group flex items-center px-2 py-2 text-sm font-medium rounded-xl transition-colors duration-150"
                 )}
+                onClick={() => {
+                  // Close sidebar on mobile when a link is clicked
+                  if (window.innerWidth < 768 && setSidebarOpen) {
+                    setSidebarOpen(false);
+                  }
+                }}
               >
                 <item.icon
                   className={classNames(
