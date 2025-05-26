@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect } from "react";
+import { login as loginApi } from "../services/authService";
 
 const AuthContext = createContext();
 
@@ -12,74 +13,45 @@ export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Mock login function - in a real app, this would validate against a database
-  const login = async (email, password, rememberMe = false) => {
+  // Login function - now using backend
+  const login = async (username, password, rememberMe = false) => {
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Simple validation
-      if (password === "password") {
-        const user = {
-          email,
-          id: Date.now().toString(),
-          firstName: "Demo",
-          lastName: "User",
-          role: email.includes("@admin")
-            ? "admin"
-            : email.includes("@chef")
-            ? "chef"
-            : "waiter",
-        };
-
-        // Store user in localStorage if rememberMe is true
-        if (rememberMe) {
-          localStorage.setItem("user", JSON.stringify(user));
-        } else {
-          // Use sessionStorage if not remembering
-          sessionStorage.setItem("user", JSON.stringify(user));
-        }
-
-        setCurrentUser(user);
-        return user;
-      } else {
-        throw new Error("Invalid credentials");
-      }
+      const data = await loginApi(username, password);
+      const { access_token, user } = data.data;
+      // Simpan token & user
+      const storage = rememberMe ? localStorage : sessionStorage;
+      storage.setItem("user", JSON.stringify(user));
+      storage.setItem("token", access_token);
+      setCurrentUser(user);
+      return user;
     } catch (error) {
-      throw error;
-    }
-  };
-
-  // Mock register function - in a real app, this would create a user in the database
-  const register = async (userData) => {
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      // In a real app, you would send userData to your backend
-      console.log("Registering user:", userData);
-
-      // For demo purposes, we'll just return success
-      return { success: true };
-    } catch (error) {
-      throw error;
+      // Tangani error dari backend
+      throw error.response?.data?.message || error.message || "Login failed";
     }
   };
 
   const logout = () => {
     localStorage.removeItem("user");
+    localStorage.removeItem("token");
     sessionStorage.removeItem("user");
+    sessionStorage.removeItem("token");
     setCurrentUser(null);
   };
 
   // Check if user is already logged in
   useEffect(() => {
-    const user = localStorage.getItem("user") || sessionStorage.getItem("user");
-    if (user) {
+    let user = localStorage.getItem("user") || sessionStorage.getItem("user");
+    // Cek agar tidak parse jika user adalah "undefined" atau "null"
+    if (user && user !== "undefined" && user !== "null") {
       setCurrentUser(JSON.parse(user));
     }
     setLoading(false);
   }, []);
+
+  // Tambahkan fungsi register dummy agar tidak error
+  const register = async () => {
+    throw new Error("Register belum diimplementasikan");
+  };
 
   const value = {
     currentUser,

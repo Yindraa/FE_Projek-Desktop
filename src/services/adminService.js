@@ -1,4 +1,5 @@
 // This file contains mock service functions that would connect to a backend API in a real application
+import axios from "axios";
 
 // Mock data for dashboard stats
 const mockStats = [
@@ -117,53 +118,6 @@ const mockMenuCategories = [
   { id: 4, name: "Beverage" },
 ];
 
-// Mock data for users
-const mockUsers = [
-  {
-    id: 1,
-    username: "admin_user",
-    firstName: "Admin",
-    lastName: "User",
-    email: "admin@example.com",
-    phoneNumber: "+1234567890",
-    role: "admin",
-    active: true,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 2,
-    username: "chef_user",
-    firstName: "Chef",
-    lastName: "User",
-    email: "chef@example.com",
-    phoneNumber: "+1234567891",
-    role: "chef",
-    active: true,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 3,
-    username: "waiter_user1",
-    firstName: "Waiter",
-    lastName: "One",
-    email: "waiter1@example.com",
-    phoneNumber: "+1234567892",
-    role: "waiter",
-    active: true,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 4,
-    username: "waiter_user2",
-    firstName: "Waiter",
-    lastName: "Two",
-    email: "waiter2@example.com",
-    phoneNumber: "+1234567893",
-    role: "waiter",
-    active: false,
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-];
 
 // Mock data for sales data
 const mockSalesData = [
@@ -310,4 +264,55 @@ export const generateStaffReport = async (
   await delay(2000); // Simulate API delay
   console.log(`Generating ${format} staff report for ${timeRange}`);
   return { url: "https://example.com/reports/staff-report.pdf" };
+};
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
+function getAuthHeader() {
+  const token = localStorage.getItem("token") || sessionStorage.getItem("token");
+  return token ? { Authorization: `Bearer ${token}` } : {};
+}
+
+// --- USER MANAGEMENT API (REAL) ---
+
+// Get all users
+export const getAllUsers = async () => {
+  const res = await axios.get(`${API_URL}/admin/users`, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
+};
+
+// Create new user
+export const createUserAPI = async (userData) => {
+  const res = await axios.post(`${API_URL}/admin/users`, userData, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
+};
+
+// Update user role
+export const updateUserRole = async (id, role) => {
+  const res = await axios.patch(
+    `${API_URL}/admin/user/${id}/role`,
+    { role },
+    { headers: getAuthHeader() }
+  );
+  return res.data;
+};
+
+// Delete user
+export const deleteUserAPI = async (id) => {
+  const res = await axios.delete(`${API_URL}/admin/user/${id}`, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
+};
+
+// Get user detail (optional, not used in list)
+export const getUserDetail = async (id) => {
+  const res = await axios.get(`${API_URL}/admin/user/${id}`, {
+    headers: getAuthHeader(),
+  });
+  return res.data;
 };

@@ -30,15 +30,19 @@ function App() {
 
   useEffect(() => {
     if (currentUser) {
-      // Determine user role based on email
-      if (currentUser.email.includes("@admin")) {
-        setUserRole("admin");
-      } else if (currentUser.email.includes("@chef")) {
-        setUserRole("chef");
-      } else if (currentUser.email.includes("@waiter")) {
-        setUserRole("waiter");
-      } else {
-        setUserRole("unknown");
+      // Gunakan role dari backend (ADMIN, CHEF, WAITER)
+      switch ((currentUser.role || "").toUpperCase()) {
+        case "ADMIN":
+          setUserRole("admin");
+          break;
+        case "CHEF":
+          setUserRole("chef");
+          break;
+        case "WAITER":
+          setUserRole("waiter");
+          break;
+        default:
+          setUserRole("unknown");
       }
     } else {
       setUserRole(null);
