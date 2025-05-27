@@ -5,14 +5,8 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import PageTitle from "../../components/common/PageTitle";
 import MenuItemForm from "../../components/menu/MenuItemForm";
 import DeleteConfirmation from "../../components/menu/DeleteConfirmation";
-import {
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  MagnifyingGlassIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-} from "@heroicons/react/24/outline";
+import MenuFiltersAndActions from "../../components/menu/MenuFiltersAndActions"; // Import the new component
+import MenuTable from "../../components/menu/MenuTable"; // Import the new component
 
 // Mock data for menu items
 const mockMenuItems = [
@@ -282,219 +276,25 @@ export default function MenuManagement() {
         )}
 
         {/* Filters and Actions */}
-        <div className="bg-white shadow-md rounded-xl mb-6 p-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
-            <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-              {/* Search */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
-                  placeholder="Search menu items..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              {/* Category Filter */}
-              <div>
-                <select
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm rounded-xl"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                >
-                  <option value="all">All Categories</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.name}>
-                      {category.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            {/* Add Button */}
-            <button
-              type="button"
-              onClick={handleAddItem}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
-            >
-              <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-              Add Menu Item
-            </button>
-          </div>
-        </div>
+        <MenuFiltersAndActions
+          searchTerm={searchTerm}
+          onSearchTermChange={setSearchTerm}
+          selectedCategory={selectedCategory}
+          onSelectedCategoryChange={setSelectedCategory}
+          categories={categories}
+          onAddItem={handleAddItem}
+        />
 
         {/* Menu Items Table */}
-        <div className="bg-white shadow-md rounded-xl overflow-hidden">
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Menu Items
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {filteredItems.length} items found
-            </p>
-          </div>
-
-          <div className="overflow-x-auto">
-            {isLoading ? (
-              <div className="animate-pulse p-4">
-                <div className="h-8 bg-gray-200 rounded mb-4"></div>
-                {Array(5)
-                  .fill(0)
-                  .map((_, index) => (
-                    <div
-                      key={index}
-                      className="h-16 bg-gray-200 rounded mb-4"
-                    ></div>
-                  ))}
-              </div>
-            ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort("name")}
-                    >
-                      <div className="flex items-center">
-                        Name
-                        {sortConfig.key === "name" &&
-                          (sortConfig.direction === "ascending" ? (
-                            <ArrowUpIcon className="h-4 w-4 ml-1" />
-                          ) : (
-                            <ArrowDownIcon className="h-4 w-4 ml-1" />
-                          ))}
-                      </div>
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort("category")}
-                    >
-                      <div className="flex items-center">
-                        Category
-                        {sortConfig.key === "category" &&
-                          (sortConfig.direction === "ascending" ? (
-                            <ArrowUpIcon className="h-4 w-4 ml-1" />
-                          ) : (
-                            <ArrowDownIcon className="h-4 w-4 ml-1" />
-                          ))}
-                      </div>
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort("price")}
-                    >
-                      <div className="flex items-center">
-                        Price
-                        {sortConfig.key === "price" &&
-                          (sortConfig.direction === "ascending" ? (
-                            <ArrowUpIcon className="h-4 w-4 ml-1" />
-                          ) : (
-                            <ArrowDownIcon className="h-4 w-4 ml-1" />
-                          ))}
-                      </div>
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Status
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {sortedItems.length > 0 ? (
-                    sortedItems.map((item) => (
-                      <tr key={item.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10">
-                              <img
-                                className="h-10 w-10 rounded-full object-cover"
-                                src={
-                                  item.image ||
-                                  "/placeholder.svg?height=40&width=40"
-                                }
-                                alt=""
-                              />
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {item.name}
-                              </div>
-                              <div className="text-sm text-gray-500 truncate max-w-xs">
-                                {item.description}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {item.category}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            ${item.price.toFixed(2)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              item.available
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {item.available ? "Available" : "Unavailable"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={() => handleEditItem(item)}
-                            className="text-amber-600 hover:text-amber-900 mr-4"
-                          >
-                            <PencilIcon className="h-5 w-5" />
-                            <span className="sr-only">Edit</span>
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(item)}
-                            className="text-red-600 hover:text-red-900"
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                            <span className="sr-only">Delete</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="5"
-                        className="px-6 py-4 text-center text-sm text-gray-500"
-                      >
-                        No menu items found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
+        <MenuTable
+          isLoading={isLoading}
+          sortedItems={sortedItems}
+          sortConfig={sortConfig}
+          onSort={handleSort}
+          onEditItem={handleEditItem}
+          onDeleteClick={handleDeleteClick}
+          filteredItemsCount={filteredItems.length}
+        />
       </div>
 
       {/* Add Menu Item Modal */}

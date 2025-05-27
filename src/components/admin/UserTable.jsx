@@ -109,13 +109,17 @@ const UserTable = ({
               <td className="px-6 py-4 whitespace-nowrap">
                 <span
                   className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                    user.role === "ADMIN" // Compare with uppercase
+                    user.role === "ADMIN"
                       ? "bg-red-100 text-red-800"
-                      : user.role === "STAFF" // Compare with uppercase
+                      : user.role === "CHEF"
+                      ? "bg-yellow-100 text-yellow-800" 
+                      : user.role === "WAITER"
+                      ? "bg-purple-100 text-purple-800" 
+                      : user.role === "STAFF" 
                       ? "bg-blue-100 text-blue-800"
-                      : user.role === "USER" // Compare with uppercase
+                      : user.role === "USER" 
                       ? "bg-green-100 text-green-800"
-                      : "bg-gray-100 text-gray-800" // Fallback for other roles
+                      : "bg-gray-100 text-gray-800" 
                   }`}
                 >
                   {user.role}
@@ -141,7 +145,7 @@ const UserTable = ({
                   <PencilIcon className="h-5 w-5" />
                 </button>
                 <button
-                  onClick={() => onDeleteUser(user.id)}
+                  onClick={() => onDeleteUser(user)}
                   className="text-red-600 hover:text-red-900 transition-colors duration-150"
                   aria-label={`Delete ${user.name}`}
                 >

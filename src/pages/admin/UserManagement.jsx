@@ -132,7 +132,6 @@ export default function UserManagement() {
             : user
         )
       );
-      setIsEditRoleModalOpen(false);
       setEditingUser(null);
     } catch (error) {
       setError(
@@ -140,6 +139,7 @@ export default function UserManagement() {
       );
     } finally {
       setIsSubmitting(false);
+      setIsEditRoleModalOpen(false); // Hide modal regardless of success or error
     }
   };
 
@@ -150,7 +150,7 @@ export default function UserManagement() {
       setError(null);
       await deleteUserAPI(deletingUser.id);
       setUsers((prevUsers) => prevUsers.filter((user) => user.id !== deletingUser.id));
-      setIsDeleteModalOpen(false);
+      // setIsDeleteModalOpen(false); // Moved to finally
       setDeletingUser(null);
     } catch (error) {
       setError(
@@ -158,6 +158,7 @@ export default function UserManagement() {
       );
     } finally {
       setIsSubmitting(false);
+      setIsDeleteModalOpen(false); // Hide modal regardless of success or error
     }
   };
 
