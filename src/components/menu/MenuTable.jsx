@@ -13,7 +13,8 @@ export default function MenuTable({
   onSort,
   onEditItem,
   onDeleteClick,
-  filteredItemsCount
+  filteredItemsCount,
+  currencySymbol = "$"
 }) {
   if (isLoading) {
     return (
@@ -101,8 +102,7 @@ export default function MenuTable({
                 scope="col"
                 className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
               >
-                Actions
-              </th>
+                Actions              </th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -112,14 +112,19 @@ export default function MenuTable({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <div className="flex-shrink-0 h-10 w-10">
-                        <img
-                          className="h-10 w-10 rounded-full object-cover"
-                          src={
-                            item.image ||
-                            "/placeholder.svg?height=40&width=40"
-                          }
-                          alt=""
-                        />
+                        {item.image ? (
+                          <img
+                            className="h-10 w-10 rounded-full object-cover"
+                            src={item.image}
+                            alt=""
+                          />
+                        ) : (
+                          <div className="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
+                            <span className="text-sm text-gray-500 font-medium">
+                              {item.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                        )}
                       </div>
                       <div className="ml-4">
                         <div className="text-sm font-medium text-gray-900">
@@ -138,7 +143,7 @@ export default function MenuTable({
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm text-gray-900">
-                      ${item.price.toFixed(2)}
+                      {currencySymbol}{typeof item.price === 'number' ? item.price.toFixed(2) : parseFloat(item.price || 0).toFixed(2)}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">

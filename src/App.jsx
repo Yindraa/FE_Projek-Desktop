@@ -52,9 +52,11 @@ function App() {
   if (loading) {
     return <LoadingScreen />;
   }
-
   return (
-    <Router>
+    <Router future={{
+      v7_startTransition: true,
+      v7_relativeSplatPath: true
+    }}>
       <Routes>
         {/* Public routes */}
         <Route path="/" element={<LandingPage />} />

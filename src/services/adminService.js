@@ -1,270 +1,5 @@
-// This file contains mock service functions that would connect to a backend API in a real application
+// This file contains service functions that connect to a backend API
 import axios from "axios";
-
-// Mock data for dashboard stats
-const mockStats = [
-  {
-    name: "Total Revenue",
-    stat: "$24,000",
-    icon: () => {},
-    change: "+4.75%",
-    changeType: "increase",
-  },
-  {
-    name: "Total Orders",
-    stat: "450",
-    icon: () => {},
-    change: "+10.15%",
-    changeType: "increase",
-  },
-  {
-    name: "Active Tables",
-    stat: "12/20",
-    icon: () => {},
-    change: "70%",
-    changeType: "neutral",
-  },
-  {
-    name: "Staff Members",
-    stat: "15",
-    icon: () => {},
-    change: "+2",
-    changeType: "increase",
-  },
-];
-
-// Mock data for recent orders
-const mockRecentOrders = [
-  { id: "ORD-001", table: "Table 5", amount: "$45.80", status: "Completed" },
-  { id: "ORD-002", table: "Table 3", amount: "$32.50", status: "In Progress" },
-  { id: "ORD-003", table: "Table 8", amount: "$78.25", status: "Completed" },
-  { id: "ORD-004", table: "Table 1", amount: "$24.00", status: "Pending" },
-];
-
-// Mock data for popular items
-const mockPopularItems = [
-  { name: "Grilled Salmon", category: "Main Course", orders: 45 },
-  { name: "Caesar Salad", category: "Appetizer", orders: 38 },
-  { name: "Chocolate Lava Cake", category: "Dessert", orders: 32 },
-  { name: "Margherita Pizza", category: "Main Course", orders: 30 },
-  { name: "Iced Coffee", category: "Beverage", orders: 28 },
-];
-
-// Mock data for menu items
-const mockMenuItems = [
-  {
-    id: 1,
-    name: "Grilled Salmon",
-    description:
-      "Fresh salmon fillet grilled to perfection with herbs and lemon",
-    category: "Main Course",
-    price: 18.99,
-    available: true,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 2,
-    name: "Caesar Salad",
-    description:
-      "Crisp romaine lettuce with Caesar dressing, croutons, and parmesan",
-    category: "Appetizer",
-    price: 9.99,
-    available: true,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 3,
-    name: "Chocolate Lava Cake",
-    description: "Warm chocolate cake with a molten chocolate center",
-    category: "Dessert",
-    price: 7.99,
-    available: true,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 4,
-    name: "Margherita Pizza",
-    description: "Classic pizza with tomato sauce, mozzarella, and fresh basil",
-    category: "Main Course",
-    price: 14.99,
-    available: true,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 5,
-    name: "Iced Coffee",
-    description: "Cold brewed coffee served over ice",
-    category: "Beverage",
-    price: 3.99,
-    available: true,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 6,
-    name: "Beef Burger",
-    description: "Juicy beef patty with lettuce, tomato, and special sauce",
-    category: "Main Course",
-    price: 12.99,
-    available: false,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-];
-
-// Mock data for menu categories
-const mockMenuCategories = [
-  { id: 1, name: "Appetizer" },
-  { id: 2, name: "Main Course" },
-  { id: 3, name: "Dessert" },
-  { id: 4, name: "Beverage" },
-];
-
-
-// Mock data for sales data
-const mockSalesData = [
-  { name: "Total Sales", value: "$24,000", icon: () => {} },
-  { name: "Average Order", value: "$53.33", icon: () => {} },
-  { name: "Orders", value: "450", icon: () => {} },
-  { name: "Customers", value: "320", icon: () => {} },
-];
-
-// Mock data for staff performance
-const mockStaffPerformance = [
-  {
-    name: "Waiter One",
-    role: "Waiter",
-    ordersProcessed: 120,
-    salesAmount: "5,240",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    name: "Waiter Two",
-    role: "Waiter",
-    ordersProcessed: 98,
-    salesAmount: "4,120",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    name: "Chef User",
-    role: "Chef",
-    ordersProcessed: 218,
-    salesAmount: "9,360",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-];
-
-// Simulate API delay
-const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
-
-// Dashboard API functions
-export const fetchDashboardStats = async () => {
-  await delay(1000); // Simulate API delay
-  return mockStats;
-};
-
-export const fetchRecentOrders = async () => {
-  await delay(800); // Simulate API delay
-  return mockRecentOrders;
-};
-
-export const fetchPopularItems = async (timeRange = "week") => {
-  await delay(1200); // Simulate API delay
-  console.log(`Fetching popular items for ${timeRange}`);
-  return mockPopularItems;
-};
-
-// Menu Management API functions
-export const fetchMenuItems = async () => {
-  await delay(1000); // Simulate API delay
-  return mockMenuItems;
-};
-
-export const fetchMenuCategories = async () => {
-  await delay(500); // Simulate API delay
-  return mockMenuCategories;
-};
-
-export const createMenuItem = async (menuItem) => {
-  await delay(1000); // Simulate API delay
-  console.log("Creating menu item:", menuItem);
-  return { ...menuItem, id: Date.now() };
-};
-
-export const updateMenuItem = async (menuItem) => {
-  await delay(1000); // Simulate API delay
-  console.log("Updating menu item:", menuItem);
-  return menuItem;
-};
-
-export const deleteMenuItem = async (menuItemId) => {
-  await delay(1000); // Simulate API delay
-  console.log("Deleting menu item:", menuItemId);
-  return { success: true };
-};
-
-// User Management API functions
-export const fetchUsers = async () => {
-  await delay(1000); // Simulate API delay
-  return mockUsers;
-};
-
-export const createUser = async (user) => {
-  await delay(1000); // Simulate API delay
-  console.log("Creating user:", user);
-  return { ...user, id: Date.now() };
-};
-
-export const updateUser = async (user) => {
-  await delay(1000); // Simulate API delay
-  console.log("Updating user:", user);
-  return user;
-};
-
-export const deleteUser = async (userId) => {
-  await delay(1000); // Simulate API delay
-  console.log("Deleting user:", userId);
-  return { success: true };
-};
-
-// Reports API functions
-export const fetchSalesData = async (timeRange = "week") => {
-  await delay(1500); // Simulate API delay
-  console.log(`Fetching sales data for ${timeRange}`);
-  return mockSalesData;
-};
-
-export const fetchStaffPerformance = async (timeRange = "week") => {
-  await delay(1200); // Simulate API delay
-  console.log(`Fetching staff performance for ${timeRange}`);
-  return mockStaffPerformance;
-};
-
-// Export functions for generating reports
-export const generateSalesReport = async (
-  timeRange = "week",
-  format = "pdf"
-) => {
-  await delay(2000); // Simulate API delay
-  console.log(`Generating ${format} sales report for ${timeRange}`);
-  return { url: "https://example.com/reports/sales-report.pdf" };
-};
-
-export const generateItemsReport = async (
-  timeRange = "week",
-  format = "pdf"
-) => {
-  await delay(2000); // Simulate API delay
-  console.log(`Generating ${format} items report for ${timeRange}`);
-  return { url: "https://example.com/reports/items-report.pdf" };
-};
-
-export const generateStaffReport = async (
-  timeRange = "week",
-  format = "pdf"
-) => {
-  await delay(2000); // Simulate API delay
-  console.log(`Generating ${format} staff report for ${timeRange}`);
-  return { url: "https://example.com/reports/staff-report.pdf" };
-};
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
@@ -273,46 +8,309 @@ function getAuthHeader() {
   return token ? { Authorization: `Bearer ${token}` } : {};
 }
 
-// --- USER MANAGEMENT API (REAL) ---
+// Transform API menu item response to frontend format
+function transformMenuItemResponse(apiItem) {
+  // Normalize available to boolean
+  let availableRaw = apiItem.availableForOrdering !== undefined ? apiItem.availableForOrdering : apiItem.available;
+  let available = false;
+  if (typeof availableRaw === 'boolean') {
+    available = availableRaw;
+  } else if (typeof availableRaw === 'string') {
+    available = availableRaw.toLowerCase() === 'true' || availableRaw.toLowerCase() === 'available';
+  } else if (typeof availableRaw === 'number') {
+    available = !!availableRaw;
+  }
+  // Also check for status === 'AVAILABLE' (case-insensitive)
+  if (!available && typeof apiItem.status === 'string') {
+    available = apiItem.status.toUpperCase() === 'AVAILABLE';
+  }
+  return {
+    ...apiItem,
+    available,
+    price: typeof apiItem.price === "string" ? parseFloat(apiItem.price) : apiItem.price,
+    image: apiItem.imageUrl
+      ? (apiItem.imageUrl.startsWith("http") ? apiItem.imageUrl : `${API_URL}${apiItem.imageUrl}`)
+      : (apiItem.image
+        ? (apiItem.image.startsWith("http") ? apiItem.image : `${API_URL}${apiItem.image}`)
+        : null)
+  };
+}
 
-// Get all users
+function handleApiError(error, defaultMessage = "An error occurred") {
+  if (error.response?.data?.message) {
+    if (Array.isArray(error.response.data.message)) {
+      throw new Error(error.response.data.message.join(", "));
+    } else {
+      throw new Error(error.response.data.message);
+    }
+  }
+  throw new Error(defaultMessage);
+}
+
+// --- DASHBOARD API ---
+export const fetchDashboardStats = async () => {
+  try {
+    const res = await axios.get(`${API_URL}/admin/dashboard/stats`, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to fetch dashboard statistics");
+  }
+};
+
+export const fetchRecentOrders = async () => {
+  try {
+    const res = await axios.get(`${API_URL}/admin/dashboard/recent-orders`, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to fetch recent orders");
+  }
+};
+
+export const fetchPopularItems = async (timeRange = "week") => {
+  try {
+    const res = await axios.get(`${API_URL}/admin/dashboard/popular-items`, {
+      params: { timeRange },
+      headers: getAuthHeader(),
+    });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to fetch popular items");
+  }
+};
+
+// --- MENU MANAGEMENT API ---
+export const fetchMenuItems = async () => {
+  try {
+    const res = await axios.get(`${API_URL}/admin/menu-items`, { headers: getAuthHeader() });
+    return res.data.map(transformMenuItemResponse);
+  } catch (error) {
+    handleApiError(error, "Failed to fetch menu items");
+  }
+};
+
+export const fetchMenuCategories = async () => {
+  const defaultCategories = [
+    "Appetizers",
+    "Main Course",
+    "Desserts",
+    "Beverages",
+    "Snacks"
+  ];
+  try {
+    const menuItems = await fetchMenuItems();
+    const extracted = menuItems
+      .map(item => item.category)
+      .filter(category => category && category.trim() !== "");
+    // Merge and deduplicate
+    const categories = Array.from(new Set([...defaultCategories, ...extracted]));
+    return categories.sort();
+  } catch (error) {
+    // If fetching menu items fails, return default categories
+    console.warn("Failed to fetch categories from menu items, using defaults:", error.message);
+    return defaultCategories;
+  }
+};
+
+export const fetchMenuItemById = async (id) => {
+  try {
+    const res = await axios.get(`${API_URL}/admin/menu-item/${id}`, { headers: getAuthHeader() });
+    return transformMenuItemResponse(res.data);
+  } catch (error) {
+    handleApiError(error, "Failed to fetch menu item details");
+  }
+};
+
+// --- USER MANAGEMENT API ---
 export const getAllUsers = async () => {
-  const res = await axios.get(`${API_URL}/admin/users`, {
-    headers: getAuthHeader(),
-  });
-  return res.data;
+  try {
+    const res = await axios.get(`${API_URL}/admin/users`, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to fetch users");
+  }
 };
 
-// Create new user
 export const createUserAPI = async (userData) => {
-  const res = await axios.post(`${API_URL}/admin/users`, userData, {
-    headers: getAuthHeader(),
-  });
-  return res.data;
+  try {
+    const res = await axios.post(`${API_URL}/admin/users`, userData, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to create user");
+  }
 };
 
-// Update user role
 export const updateUserRole = async (id, role) => {
-  const res = await axios.patch(
-    `${API_URL}/admin/user/${id}/role`,
-    { role },
-    { headers: getAuthHeader() }
-  );
-  return res.data;
+  try {
+    const res = await axios.patch(
+      `${API_URL}/admin/user/${id}/role`,
+      { role },
+      { headers: getAuthHeader() }
+    );
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to update user role");
+  }
 };
 
-// Delete user
 export const deleteUserAPI = async (id) => {
-  const res = await axios.delete(`${API_URL}/admin/user/${id}`, {
-    headers: getAuthHeader(),
-  });
-  return res.data;
+  try {
+    const res = await axios.delete(`${API_URL}/admin/user/${id}`, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to delete user");
+  }
 };
 
-// Get user detail (optional, not used in list)
 export const getUserDetail = async (id) => {
-  const res = await axios.get(`${API_URL}/admin/user/${id}`, {
-    headers: getAuthHeader(),
-  });
-  return res.data;
+  try {
+    const res = await axios.get(`${API_URL}/admin/user/${id}`, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to fetch user details");
+  }
+};
+
+// --- MENU MANAGEMENT API ---
+export const createMenuItemAPI = async (menuItem) => {
+  try {
+    if (menuItem.image && menuItem.image instanceof File) {
+      const formData = new FormData();
+      formData.append("name", menuItem.name);
+      formData.append("category", menuItem.category);
+      formData.append("price", parseFloat(menuItem.price).toString());
+      if (menuItem.description) formData.append("description", menuItem.description);
+      formData.append("availableForOrdering", menuItem.available === true || menuItem.available === "true" ? "true" : "false");
+      formData.append("imageFile", menuItem.image);
+      const res = await axios.post(`${API_URL}/admin/menu-item`, formData, { headers: getAuthHeader() });
+      return transformMenuItemResponse(res.data);
+    } else {
+      const requestBody = {
+        name: menuItem.name,
+        category: menuItem.category,
+        price: parseFloat(menuItem.price),
+        description: menuItem.description,
+        availableForOrdering: menuItem.available
+      };
+      const res = await axios.post(`${API_URL}/admin/menu-item`, requestBody, {
+        headers: { ...getAuthHeader(), "Content-Type": "application/json" },
+      });
+      return transformMenuItemResponse(res.data);
+    }
+  } catch (error) {
+    handleApiError(error, "Failed to create menu item");
+  }
+};
+
+export const updateMenuItemAPI = async (id, menuItem) => {
+  try {
+    // Always use FormData for PATCH, even if no image is uploaded
+    const formData = new FormData();
+    if (menuItem.name) formData.append("name", menuItem.name);
+    if (menuItem.category) formData.append("category", menuItem.category);
+    if (menuItem.price) formData.append("price", parseFloat(menuItem.price).toString());
+    if (menuItem.description) formData.append("description", menuItem.description);
+    if (menuItem.available !== undefined) formData.append("availableForOrdering", menuItem.available === true || menuItem.available === "true" ? "true" : "false");
+    if (menuItem.image && menuItem.image instanceof File) {
+      formData.append("imageFile", menuItem.image);
+    }
+    const res = await axios.patch(`${API_URL}/admin/menu-item/${id}`, formData, { headers: getAuthHeader() });
+    return transformMenuItemResponse(res.data);
+  } catch (error) {
+    handleApiError(error, "Failed to update menu item");
+  }
+};
+
+export const deleteMenuItemAPI = async (id) => {
+  try {
+    const res = await axios.delete(`${API_URL}/admin/menu-item/${id}`, { headers: getAuthHeader() });
+    return transformMenuItemResponse(res.data);
+  } catch (error) {
+    // Handle specific delete menu item errors
+    if (error.response?.status === 404) {
+      throw new Error("Menu item not found. It may have already been deleted.");
+    } else if (error.response?.status === 409) {
+      throw new Error("Cannot delete menu item as it is referenced by existing orders. Please contact administrator.");
+    }
+    handleApiError(error, "Failed to delete menu item");
+  }
+};
+
+// --- REPORTS API ---
+export const fetchSalesData = async (timeRange = "week") => {
+  try {
+    const res = await axios.get(`${API_URL}/admin/reports/sales`, {
+      params: { timeRange },
+      headers: getAuthHeader(),
+    });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to fetch sales data");
+  }
+};
+
+export const fetchStaffPerformance = async (timeRange = "week") => {
+  try {
+    const res = await axios.get(`${API_URL}/admin/reports/staff-performance`, {
+      params: { timeRange },
+      headers: getAuthHeader(),
+    });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to fetch staff performance data");
+  }
+};
+
+export const generateSalesReport = async (timeRange = "week", format = "pdf") => {
+  try {
+    const res = await axios.post(`${API_URL}/admin/reports/sales/generate`, { timeRange, format }, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to generate sales report");
+  }
+};
+
+export const generateItemsReport = async (timeRange = "week", format = "pdf") => {
+  try {
+    const res = await axios.post(`${API_URL}/admin/reports/items/generate`, { timeRange, format }, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to generate items report");
+  }
+};
+
+export const generateStaffReport = async (timeRange = "week", format = "pdf") => {
+  try {
+    const res = await axios.post(`${API_URL}/admin/reports/staff/generate`, { timeRange, format }, { headers: getAuthHeader() });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to generate staff report");
+  }
+};
+
+export const testApiConnection = async () => {
+  try {
+    const res = await axios.get(`${API_URL}/health`, { headers: getAuthHeader(), timeout: 5000 });
+    return { connected: true, status: res.status, data: res.data };
+  } catch (error) {
+    return { connected: false, error: error.message, status: error.response?.status || 0 };
+  }
+};
+
+export const bulkUpdateMenuItems = async (updates) => {
+  try {
+    const res = await axios.patch(`${API_URL}/admin/menu-items/bulk`, updates, { headers: getAuthHeader() });
+    return res.data.map(transformMenuItemResponse);
+  } catch (error) {
+    handleApiError(error, "Failed to bulk update menu items");
+  }
+};
+
+export const searchMenuItems = async (query, filters = {}) => {
+  try {
+    const params = { query, ...filters };
+    const res = await axios.get(`${API_URL}/admin/menu-items/search`, { params, headers: getAuthHeader() });
+    return res.data.map(transformMenuItemResponse);
+  } catch (error) {
+    handleApiError(error, "Failed to search menu items");
+  }
 };

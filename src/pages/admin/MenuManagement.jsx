@@ -5,82 +5,21 @@ import DashboardLayout from "../../components/layout/DashboardLayout";
 import PageTitle from "../../components/common/PageTitle";
 import MenuItemForm from "../../components/menu/MenuItemForm";
 import DeleteConfirmation from "../../components/menu/DeleteConfirmation";
-import MenuFiltersAndActions from "../../components/menu/MenuFiltersAndActions"; // Import the new component
-import MenuTable from "../../components/menu/MenuTable"; // Import the new component
+import MenuFiltersAndActions from "../../components/menu/MenuFiltersAndActions";
+import MenuTable from "../../components/menu/MenuTable";
+import { 
+  createMenuItemAPI, 
+  updateMenuItemAPI, 
+  deleteMenuItemAPI, 
+  fetchMenuItems, 
+  fetchMenuCategories 
+} from "../../services/adminService";
 
-// Mock data for menu items
-const mockMenuItems = [
-  {
-    id: 1,
-    name: "Grilled Salmon",
-    description:
-      "Fresh salmon fillet grilled to perfection with herbs and lemon",
-    category: "Main Course",
-    price: 18.99,
-    available: true,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 2,
-    name: "Caesar Salad",
-    description:
-      "Crisp romaine lettuce with Caesar dressing, croutons, and parmesan",
-    category: "Appetizer",
-    price: 9.99,
-    available: true,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 3,
-    name: "Chocolate Lava Cake",
-    description: "Warm chocolate cake with a molten chocolate center",
-    category: "Dessert",
-    price: 7.99,
-    available: true,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 4,
-    name: "Margherita Pizza",
-    description: "Classic pizza with tomato sauce, mozzarella, and fresh basil",
-    category: "Main Course",
-    price: 14.99,
-    available: true,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 5,
-    name: "Iced Coffee",
-    description: "Cold brewed coffee served over ice",
-    category: "Beverage",
-    price: 3.99,
-    available: true,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    id: 6,
-    name: "Beef Burger",
-    description: "Juicy beef patty with lettuce, tomato, and special sauce",
-    category: "Main Course",
-    price: 12.99,
-    available: false,
-    image: "/placeholder.svg?height=40&width=40",
-  },
-];
-
-// Mock data for menu categories
-const mockMenuCategories = [
-  { id: 1, name: "Appetizer" },
-  { id: 2, name: "Main Course" },
-  { id: 3, name: "Dessert" },
-  { id: 4, name: "Beverage" },
-];
-
-export default function MenuManagement() {
-  const [menuItems, setMenuItems] = useState([]);
+export default function MenuManagement() {  const [menuItems, setMenuItems] = useState([]);
   const [categories, setCategories] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [sortConfig, setSortConfig] = useState({
@@ -97,28 +36,37 @@ export default function MenuManagement() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    // Simulate API call with a delay
     const loadMenuData = async () => {
       try {
         setIsLoading(true);
         setError(null);
 
-        // Simulate network delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Use mock data directly
-        setMenuItems(mockMenuItems);
-        setCategories(mockMenuCategories);
+        // Load data from real API
+        const [menuItemsData, categoriesData] = await Promise.all([
+          fetchMenuItems(),
+          fetchMenuCategories()
+        ]);
+        
+        setMenuItems(menuItemsData);
+        setCategories(categoriesData);
       } catch (err) {
         console.error("Error loading menu data:", err);
         setError("Failed to load menu data. Please try again.");
       } finally {
         setIsLoading(false);
       }
-    };
-
-    loadMenuData();
+    };    loadMenuData();
   }, []);
+
+  // Auto-clear success messages after 5 seconds
+  useEffect(() => {
+    if (success) {
+      const timer = setTimeout(() => {
+        setSuccess(null);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [success]);
 
   const handleAddItem = () => {
     setIsAddModalOpen(true);
@@ -133,48 +81,37 @@ export default function MenuManagement() {
     setDeletingItem(item);
     setIsDeleteModalOpen(true);
   };
-
   const handleAddSubmit = async (formData) => {
     try {
       setIsSubmitting(true);
-
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Create a new item with an ID
-      const newItem = {
-        id: Date.now(),
-        ...formData,
-        image: formData.imagePreview || "/placeholder.svg?height=40&width=40",
-      };
-
-      // Update local state with the new item
+      setError(null);
+      setSuccess(null);
+      // Kirim ke backend
+      const newItem = await createMenuItemAPI(formData);
       setMenuItems((prevItems) => [...prevItems, newItem]);
-
-      // Close the modal
       setIsAddModalOpen(false);
     } catch (error) {
-      console.error("Error adding menu item:", error);
-      setError("Failed to add menu item. Please try again.");
+      let msg = "Failed to add menu item. Please try again.";
+      if (error?.response?.data?.message) {
+        if (Array.isArray(error.response.data.message)) {
+          msg = error.response.data.message.join(", ");
+        } else {
+          msg = error.response.data.message;
+        }
+      }
+      setError(msg);
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const handleEditSubmit = async (formData) => {
+  };  const handleEditSubmit = async (formData) => {
     try {
       setIsSubmitting(true);
+      setError(null);
+      setSuccess(null);
 
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-
-      // Create updated item
-      const updatedItem = {
-        id: editingItem.id,
-        ...formData,
-        image: formData.imagePreview || editingItem.image,
-      };
-
+      // Update via real API
+      const updatedItem = await updateMenuItemAPI(editingItem.id, formData);
+      
       // Update local state with the updated item
       setMenuItems((prevItems) =>
         prevItems.map((item) =>
@@ -182,35 +119,71 @@ export default function MenuManagement() {
         )
       );
 
+      // Show success message
+      setSuccess(`Menu item \"${updatedItem.name}\" has been updated successfully.`);
+
       // Close the modal
       setIsEditModalOpen(false);
       setEditingItem(null);
     } catch (error) {
       console.error("Error updating menu item:", error);
-      setError("Failed to update menu item. Please try again.");
+      let msg = "Failed to update menu item. Please try again.";
+      if (error?.response?.data?.message) {
+        if (Array.isArray(error.response.data.message)) {
+          msg = error.response.data.message.join(", ");
+        } else {
+          msg = error.response.data.message;
+        }
+      }
+      setError(msg);
     } finally {
       setIsSubmitting(false);
     }
   };
-
   const handleDeleteConfirm = async () => {
     try {
       setIsSubmitting(true);
+      setError(null);
+      setSuccess(null);
 
-      // Simulate API call delay
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Delete via real API
+      await deleteMenuItemAPI(deletingItem.id);
 
       // Update local state by removing the deleted item
       setMenuItems((prevItems) =>
         prevItems.filter((item) => item.id !== deletingItem.id)
       );
 
+      // Show success message
+      setSuccess(`Menu item "${deletingItem.name}" has been deleted successfully.`);
+
       // Close the modal
       setIsDeleteModalOpen(false);
-      setDeletingItem(null);
-    } catch (error) {
+      setDeletingItem(null);} catch (error) {
       console.error("Error deleting menu item:", error);
-      setError("Failed to delete menu item. Please try again.");
+      let msg = "Failed to delete menu item. Please try again.";
+      
+      // Handle specific error scenarios
+      if (error.message.includes("referenced by existing orders")) {
+        msg = "Cannot delete this menu item because it's part of existing orders. Please contact your administrator.";
+      } else if (error.message.includes("not found")) {
+        msg = "Menu item not found. It may have already been deleted.";
+        // If item not found, also remove it from local state
+        setMenuItems((prevItems) =>
+          prevItems.filter((item) => item.id !== deletingItem.id)
+        );
+        setIsDeleteModalOpen(false);
+        setDeletingItem(null);
+      } else if (error?.response?.data?.message) {
+        if (Array.isArray(error.response.data.message)) {
+          msg = error.response.data.message.join(", ");
+        } else {
+          msg = error.response.data.message;
+        }
+      } else if (error.message) {
+        msg = error.message;
+      }
+      setError(msg);
     } finally {
       setIsSubmitting(false);
     }
@@ -250,9 +223,7 @@ export default function MenuManagement() {
         <PageTitle
           title="Menu Management"
           subtitle="Add, edit, and manage your restaurant's menu items"
-        />
-
-        {error && (
+        />        {error && (
           <div className="mb-6 rounded-lg bg-red-50 border-l-4 border-red-500 p-4">
             <div className="flex">
               <div className="flex-shrink-0">
@@ -270,6 +241,29 @@ export default function MenuManagement() {
               </div>
               <div className="ml-3">
                 <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {success && (
+          <div className="mb-6 rounded-lg bg-green-50 border-l-4 border-green-500 p-4">
+            <div className="flex">
+              <div className="flex-shrink-0">
+                <svg
+                  className="h-5 w-5 text-green-500"
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-green-700">{success}</p>
               </div>
             </div>
           </div>
@@ -294,6 +288,7 @@ export default function MenuManagement() {
           onEditItem={handleEditItem}
           onDeleteClick={handleDeleteClick}
           filteredItemsCount={filteredItems.length}
+          currencySymbol="Rp."
         />
       </div>
 

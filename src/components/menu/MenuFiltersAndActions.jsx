@@ -33,11 +33,10 @@ export default function MenuFiltersAndActions({
               className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm rounded-xl"
               value={selectedCategory}
               onChange={(e) => onSelectedCategoryChange(e.target.value)}
-            >
-              <option value="all">All Categories</option>
-              {categories.map((category) => (
-                <option key={category.id} value={category.name}>
-                  {category.name}
+            >              <option value="all">All Categories</option>
+              {categories.map((category, index) => (
+                <option key={category || index} value={category}>
+                  {category}
                 </option>
               ))}
             </select>

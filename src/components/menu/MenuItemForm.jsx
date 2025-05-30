@@ -32,15 +32,14 @@ export default function MenuItemForm({
         price: initialData.price ? initialData.price.toString() : "",
         available:
           initialData.available !== undefined ? initialData.available : true,
-        image: null,
-        imagePreview: initialData.image || null,
+        image: null,        imagePreview: initialData.image || null,
       });
     } else {
       // Reset form when adding new item
       setFormData({
         name: "",
         description: "",
-        category: categories.length > 0 ? categories[0].name : "",
+        category: categories.length > 0 ? categories[0] : "",
         price: "",
         available: true,
         image: null,
@@ -121,7 +120,6 @@ export default function MenuItemForm({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -131,6 +129,15 @@ export default function MenuItemForm({
         ...formData,
         price: Number.parseFloat(formData.price),
       };
+
+      // Debug: Log submission data
+      console.log('Submitting menu item:', {
+        name: submissionData.name,
+        hasImage: !!submissionData.image,
+        imageFile: submissionData.image,
+        imageType: submissionData.image?.type,
+        imageSize: submissionData.image?.size
+      });
 
       onSubmit(submissionData);
     }
@@ -281,11 +288,10 @@ export default function MenuItemForm({
                   className={`mt-1 block w-full rounded-xl border ${
                     errors.category ? "border-red-300" : "border-gray-300"
                   } bg-white px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm`}
-                >
-                  <option value="">Select a category</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.name}>
-                      {category.name}
+                >                  <option value="">Select a category</option>
+                  {categories.map((category, index) => (
+                    <option key={category || index} value={category}>
+                      {category}
                     </option>
                   ))}
                 </select>
@@ -300,18 +306,25 @@ export default function MenuItemForm({
                   htmlFor="price"
                   className="block text-sm font-medium text-gray-700"
                 >
-                  Price ($)
+                  Harga (Rp)
                 </label>
-                <input
-                  type="text"
-                  name="price"
-                  id="price"
-                  value={formData.price}
-                  onChange={handleChange}
-                  className={`mt-1 block w-full rounded-xl border ${
-                    errors.price ? "border-red-300" : "border-gray-300"
-                  } px-3 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm`}
-                />
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 select-none">
+                    Rp
+                  </span>
+                  <input
+                    type="text"
+                    name="price"
+                    id="price"
+                    value={formData.price}
+                    onChange={handleChange}
+                    className={`mt-1 block w-full rounded-xl border ${
+                      errors.price ? "border-red-300" : "border-gray-300"
+                    } px-8 py-2 shadow-sm focus:border-amber-500 focus:outline-none focus:ring-amber-500 sm:text-sm`}
+                    placeholder="0"
+                    style={{ paddingLeft: "2.5rem" }}
+                  />
+                </div>
                 {errors.price && (
                   <p className="mt-1 text-xs text-red-600">{errors.price}</p>
                 )}
