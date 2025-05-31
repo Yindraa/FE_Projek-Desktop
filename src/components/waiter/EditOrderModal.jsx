@@ -8,36 +8,7 @@ import {
   MinusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-
-// Mock menu items - in a real app, this would come from your database
-const MENU_ITEMS = [
-  { id: 1, name: "Beef Burger", price: 12.99, category: "Main Course" },
-  { id: 2, name: "Caesar Salad", price: 8.99, category: "Appetizer" },
-  { id: 3, name: "Iced Tea", price: 3.99, category: "Beverage" },
-  { id: 4, name: "Margherita Pizza", price: 14.99, category: "Main Course" },
-  { id: 5, name: "French Fries", price: 4.99, category: "Side" },
-  { id: 6, name: "Chocolate Cake", price: 6.99, category: "Dessert" },
-  { id: 7, name: "Chicken Wings", price: 9.99, category: "Appetizer" },
-  { id: 8, name: "Soda", price: 2.99, category: "Beverage" },
-  { id: 9, name: "Grilled Salmon", price: 18.99, category: "Main Course" },
-  { id: 10, name: "Tiramisu", price: 7.99, category: "Dessert" },
-  { id: 11, name: "Garlic Bread", price: 4.99, category: "Side" },
-  {
-    id: 12,
-    name: "Spaghetti Carbonara",
-    price: 16.99,
-    category: "Main Course",
-  },
-];
-
-// Group menu items by category
-const MENU_BY_CATEGORY = MENU_ITEMS.reduce((acc, item) => {
-  if (!acc[item.category]) {
-    acc[item.category] = [];
-  }
-  acc[item.category].push(item);
-  return acc;
-}, {});
+import { waiterService } from "../../services/waiterService";
 
 export default function EditOrderModal({
   isOpen,
@@ -46,14 +17,43 @@ export default function EditOrderModal({
   onUpdateOrder,
 }) {
   const [orderItems, setOrderItems] = useState([]);
-  const [activeCategory, setActiveCategory] = useState(
-    Object.keys(MENU_BY_CATEGORY)[0] || ""
-  );
-  const [originalTotal, setOriginalTotal] = useState(0);
+  const [menuItems, setMenuItems] = useState([]);
+  const [menuByCategory, setMenuByCategory] = useState({});
+  const [activeCategory, setActiveCategory] = useState("");
+  const [isLoadingMenu, setIsLoadingMenu] = useState(false);  const [originalTotal, setOriginalTotal] = useState(0);
 
+  // Fetch menu items when component mounts or modal opens
+  useEffect(() => {
+    if (isOpen) {
+      loadMenuItems();
+    }
+  }, [isOpen]);
+  const loadMenuItems = async () => {
+    setIsLoadingMenu(true);
+    try {
+      const availableItems = await waiterService.getMenuItems();
+      
+      setMenuItems(availableItems);
+      
+      // Group items by category using waiterService utility
+      const groupedItems = waiterService.groupMenuItemsByCategory(availableItems);
+      
+      setMenuByCategory(groupedItems);
+      
+      // Set first category as active
+      const categories = Object.keys(groupedItems);
+      if (categories.length > 0) {
+        setActiveCategory(categories[0]);
+      }
+    } catch (error) {
+      console.error('Failed to load menu items:', error);
+    } finally {
+      setIsLoadingMenu(false);
+    }
+  };
   // Initialize order items when the modal opens
   useEffect(() => {
-    if (isOpen && order) {
+    if (isOpen && order && menuItems.length > 0) {
       try {
         // For orders from the dashboard, we need to create mock items since they only have a count
         let formattedItems = [];
@@ -64,13 +64,9 @@ export default function EditOrderModal({
           formattedItems = order.items.map((item) => ({
             id: Date.now() + Math.random(),
             menuItemId:
-              MENU_ITEMS.find((menuItem) => menuItem.name === item.name)?.id ||
+              menuItems.find((menuItem) => menuItem.name === item.name)?.id ||
               0,
-            name: item.name,
-            price:
-              typeof item.price === "number"
-                ? item.price
-                : Number.parseFloat(item.price?.replace("$", "") || "0"),
+            name: item.name,            price: waiterService.parsePrice(item.price),
             quantity: item.quantity || 1,
             notes: item.notes || "",
           }));
@@ -87,17 +83,8 @@ export default function EditOrderModal({
               notes: "",
             },
           ];
-        }
-
-        setOrderItems(formattedItems);
-
-        // Parse the total if it's a string with a dollar sign
-        let total = 0;
-        if (typeof order.total === "number") {
-          total = order.total;
-        } else if (typeof order.total === "string") {
-          total = Number.parseFloat(order.total.replace("$", "") || "0");
-        }
+        }        setOrderItems(formattedItems);        // Parse the total using waiterService utility
+        const total = waiterService.parsePrice(order.total);
 
         setOriginalTotal(total);
       } catch (error) {
@@ -107,7 +94,7 @@ export default function EditOrderModal({
         setOriginalTotal(0);
       }
     }
-  }, [order, isOpen]);
+  }, [order, isOpen, menuItems]);
 
   const addItemToOrder = (menuItem) => {
     const existingItem = orderItems.find(
@@ -253,16 +240,14 @@ export default function EditOrderModal({
                         </p>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="mt-4 flex-1 overflow-hidden flex">
+                  </div>                  <div className="mt-4 flex-1 overflow-hidden flex">
                     {/* Menu Section */}
                     <div className="w-1/2 pr-4 flex flex-col overflow-hidden">
                       <h4 className="font-medium text-gray-900 mb-2">
                         Add Items
                       </h4>
                       <div className="flex space-x-2 overflow-x-auto pb-2">
-                        {Object.keys(MENU_BY_CATEGORY).map((category) => (
+                        {Object.keys(menuByCategory).map((category) => (
                           <button
                             key={category}
                             className={`px-3 py-1 text-sm font-medium rounded-xl whitespace-nowrap ${
@@ -278,23 +263,33 @@ export default function EditOrderModal({
                       </div>
 
                       <div className="mt-3 flex-1 overflow-y-auto">
-                        <div className="grid grid-cols-1 gap-2">
-                          {MENU_BY_CATEGORY[activeCategory]?.map((menuItem) => (
-                            <button
-                              key={menuItem.id}
-                              className="flex justify-between items-center p-3 rounded-xl border border-gray-200 hover:bg-amber-50 text-left"
-                              onClick={() => addItemToOrder(menuItem)}
-                            >
-                              <div>
-                                <h4 className="font-medium">{menuItem.name}</h4>
-                                <p className="text-sm text-gray-500">
-                                  ${menuItem.price.toFixed(2)}
-                                </p>
-                              </div>
-                              <PlusIcon className="h-5 w-5 text-amber-600" />
-                            </button>
-                          ))}
-                        </div>
+                        {isLoadingMenu ? (
+                          <div className="flex items-center justify-center h-32">
+                            <div className="text-sm text-gray-500">Loading menu...</div>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 gap-2">
+                            {menuByCategory[activeCategory]?.map((menuItem) => (
+                              <button
+                                key={menuItem.id}
+                                className="flex justify-between items-center p-3 rounded-xl border border-gray-200 hover:bg-amber-50 text-left"
+                                onClick={() => addItemToOrder(menuItem)}
+                              >
+                                <div>                                <h4 className="font-medium">{menuItem.name}</h4>
+                                  <p className="text-sm text-gray-500">
+                                    {waiterService.formatPrice(menuItem.price)}
+                                  </p>
+                                  {menuItem.description && (
+                                    <p className="text-xs text-gray-400 mt-1">
+                                      {menuItem.description}
+                                    </p>
+                                  )}
+                                </div>
+                                <PlusIcon className="h-5 w-5 text-amber-600" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -344,11 +339,8 @@ export default function EditOrderModal({
                                     <PlusIcon className="h-4 w-4 text-gray-600" />
                                   </button>
                                 </div>
-                              </div>
-
-                              <div className="flex justify-between items-center mt-1">
-                                <p className="text-sm text-gray-500">
-                                  ${(item.price * item.quantity).toFixed(2)}
+                              </div>                              <div className="flex justify-between items-center mt-1">                                <p className="text-sm text-gray-500">
+                                  {waiterService.formatPrice(item.price * item.quantity)}
                                 </p>
                                 <button
                                   className="p-1 rounded-full hover:bg-gray-100 text-red-500"
@@ -371,17 +363,15 @@ export default function EditOrderModal({
                               </div>
                             </div>
                           ))}
-                        </div>
-                      )}
+                        </div>                      )}
 
-                      <div className="mt-4 pt-3 border-t border-gray-200">
-                        <div className="flex justify-between text-sm text-gray-500">
+                      <div className="mt-4 pt-3 border-t border-gray-200">                        <div className="flex justify-between text-sm text-gray-500">
                           <span>Original Total:</span>
-                          <span>${originalTotal.toFixed(2)}</span>
+                          <span>{waiterService.formatPrice(originalTotal)}</span>
                         </div>
                         <div className="flex justify-between font-medium mt-1">
                           <span>New Total:</span>
-                          <span>${calculateTotal().toFixed(2)}</span>
+                          <span>{waiterService.formatPrice(calculateTotal())}</span>
                         </div>
                         <div className="flex justify-between text-sm text-gray-500 mt-1">
                           <span>Difference:</span>
@@ -392,10 +382,8 @@ export default function EditOrderModal({
                                 : calculateTotal() < originalTotal
                                 ? "text-red-600"
                                 : ""
-                            }
-                          >
-                            {calculateTotal() > originalTotal ? "+" : ""}$
-                            {(calculateTotal() - originalTotal).toFixed(2)}
+                            }                          >
+                            {calculateTotal() > originalTotal ? "+" : ""}{waiterService.formatPrice(Math.abs(calculateTotal() - originalTotal))}
                           </span>
                         </div>
                       </div>

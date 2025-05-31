@@ -81,7 +81,7 @@ export const fetchPopularItems = async (timeRange = "week") => {
 // --- MENU MANAGEMENT API ---
 export const fetchMenuItems = async () => {
   try {
-    const res = await axios.get(`${API_URL}/admin/menu-items`, { headers: getAuthHeader() });
+    const res = await axios.get(`${API_URL}/menu/items`, { headers: getAuthHeader() });
     return res.data.map(transformMenuItemResponse);
   } catch (error) {
     handleApiError(error, "Failed to fetch menu items");
@@ -103,17 +103,15 @@ export const fetchMenuCategories = async () => {
       .filter(category => category && category.trim() !== "");
     // Merge and deduplicate
     const categories = Array.from(new Set([...defaultCategories, ...extracted]));
-    return categories.sort();
-  } catch (error) {
+    return categories.sort();  } catch (error) {
     // If fetching menu items fails, return default categories
-    console.warn("Failed to fetch categories from menu items, using defaults:", error.message);
     return defaultCategories;
   }
 };
 
 export const fetchMenuItemById = async (id) => {
   try {
-    const res = await axios.get(`${API_URL}/admin/menu-item/${id}`, { headers: getAuthHeader() });
+    const res = await axios.get(`${API_URL}/menu/item/${id}`, { headers: getAuthHeader() });
     return transformMenuItemResponse(res.data);
   } catch (error) {
     handleApiError(error, "Failed to fetch menu item details");
@@ -179,9 +177,9 @@ export const createMenuItemAPI = async (menuItem) => {
       formData.append("category", menuItem.category);
       formData.append("price", parseFloat(menuItem.price).toString());
       if (menuItem.description) formData.append("description", menuItem.description);
-      formData.append("availableForOrdering", menuItem.available === true || menuItem.available === "true" ? "true" : "false");
+      formData.append("availableForOrdering", menuItem.availableForOrdering === true ? "true" : "false");
       formData.append("imageFile", menuItem.image);
-      const res = await axios.post(`${API_URL}/admin/menu-item`, formData, { headers: getAuthHeader() });
+      const res = await axios.post(`${API_URL}/menu/item`, formData, { headers: getAuthHeader() });
       return transformMenuItemResponse(res.data);
     } else {
       const requestBody = {
@@ -189,9 +187,9 @@ export const createMenuItemAPI = async (menuItem) => {
         category: menuItem.category,
         price: parseFloat(menuItem.price),
         description: menuItem.description,
-        availableForOrdering: menuItem.available
+        availableForOrdering: menuItem.availableForOrdering === true
       };
-      const res = await axios.post(`${API_URL}/admin/menu-item`, requestBody, {
+      const res = await axios.post(`${API_URL}/menu/item`, requestBody, {
         headers: { ...getAuthHeader(), "Content-Type": "application/json" },
       });
       return transformMenuItemResponse(res.data);
@@ -209,11 +207,12 @@ export const updateMenuItemAPI = async (id, menuItem) => {
     if (menuItem.category) formData.append("category", menuItem.category);
     if (menuItem.price) formData.append("price", parseFloat(menuItem.price).toString());
     if (menuItem.description) formData.append("description", menuItem.description);
-    if (menuItem.available !== undefined) formData.append("availableForOrdering", menuItem.available === true || menuItem.available === "true" ? "true" : "false");
+    // Selalu kirim availableForOrdering, walaupun false
+    formData.append("availableForOrdering", menuItem.availableForOrdering === true ? "true" : "false");
     if (menuItem.image && menuItem.image instanceof File) {
       formData.append("imageFile", menuItem.image);
     }
-    const res = await axios.patch(`${API_URL}/admin/menu-item/${id}`, formData, { headers: getAuthHeader() });
+    const res = await axios.patch(`${API_URL}/menu/item/${id}`, formData, { headers: getAuthHeader() });
     return transformMenuItemResponse(res.data);
   } catch (error) {
     handleApiError(error, "Failed to update menu item");
@@ -222,7 +221,7 @@ export const updateMenuItemAPI = async (id, menuItem) => {
 
 export const deleteMenuItemAPI = async (id) => {
   try {
-    const res = await axios.delete(`${API_URL}/admin/menu-item/${id}`, { headers: getAuthHeader() });
+    const res = await axios.delete(`${API_URL}/menu/item/${id}`, { headers: getAuthHeader() });
     return transformMenuItemResponse(res.data);
   } catch (error) {
     // Handle specific delete menu item errors
@@ -287,30 +286,24 @@ export const generateStaffReport = async (timeRange = "week", format = "pdf") =>
   }
 };
 
-export const testApiConnection = async () => {
-  try {
-    const res = await axios.get(`${API_URL}/health`, { headers: getAuthHeader(), timeout: 5000 });
-    return { connected: true, status: res.status, data: res.data };
-  } catch (error) {
-    return { connected: false, error: error.message, status: error.response?.status || 0 };
-  }
-};
 
-export const bulkUpdateMenuItems = async (updates) => {
-  try {
-    const res = await axios.patch(`${API_URL}/admin/menu-items/bulk`, updates, { headers: getAuthHeader() });
-    return res.data.map(transformMenuItemResponse);
-  } catch (error) {
-    handleApiError(error, "Failed to bulk update menu items");
-  }
-};
+// export const bulkUpdateMenuItems = async (updates) => {
+//   try {
+//     // NOTE: This endpoint may need to be implemented in the backend
+//     const res = await axios.patch(`${API_URL}/menu/items/bulk`, updates, { headers: getAuthHeader() });
+//     return res.data.map(transformMenuItemResponse);
+//   } catch (error) {
+//     handleApiError(error, "Failed to bulk update menu items");
+//   }
+// };
 
-export const searchMenuItems = async (query, filters = {}) => {
-  try {
-    const params = { query, ...filters };
-    const res = await axios.get(`${API_URL}/admin/menu-items/search`, { params, headers: getAuthHeader() });
-    return res.data.map(transformMenuItemResponse);
-  } catch (error) {
-    handleApiError(error, "Failed to search menu items");
-  }
-};
+// export const searchMenuItems = async (query, filters = {}) => {
+//   try {
+//     // NOTE: This endpoint may need to be implemented in the backend
+//     const params = { query, ...filters };
+//     const res = await axios.get(`${API_URL}/menu/items/search`, { params, headers: getAuthHeader() });
+//     return res.data.map(transformMenuItemResponse);
+//   } catch (error) {
+//     handleApiError(error, "Failed to search menu items");
+//   }
+// };

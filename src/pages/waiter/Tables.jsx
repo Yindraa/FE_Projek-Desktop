@@ -7,6 +7,7 @@ import NewOrderModal from "../../components/waiter/NewOrderModal";
 import SeatCustomersModal from "../../components/waiter/SeatCustomersModal";
 import ConfirmationModal from "../../components/waiter/ConfirmationModal";
 import { PlusIcon } from "@heroicons/react/24/outline";
+import { waiterService } from "../../services/waiterService";
 
 export default function Tables() {
   const [tables, setTables] = useState([]);
@@ -21,95 +22,57 @@ export default function Tables() {
     useState(false);
   const [isCancelReservationModalOpen, setIsCancelReservationModalOpen] =
     useState(false);
-
   useEffect(() => {
-    // Simulate API call with mock data
-    const loadTables = async () => {
-      setIsLoading(true);
-
-      // Simulate API delay
-      setTimeout(() => {
-        // Mock tables data
-        setTables([
-          { id: 1, status: "available", orders: [] },
-          {
-            id: 2,
-            status: "occupied",
-            orders: [
-              {
-                id: "ORD-002",
-                items: 3,
-                total: "$32.50",
-                status: "in-progress",
-                time: "10:30 AM",
-              },
-            ],
-          },
-          { id: 3, status: "available", orders: [] },
-          {
-            id: 4,
-            status: "occupied",
-            orders: [
-              {
-                id: "ORD-004",
-                items: 2,
-                total: "$24.00",
-                status: "pending-payment",
-                time: "10:45 AM",
-              },
-            ],
-          },
-          {
-            id: 5,
-            status: "occupied",
-            orders: [
-              {
-                id: "ORD-001",
-                items: 4,
-                total: "$45.80",
-                status: "served",
-                time: "10:15 AM",
-              },
-            ],
-          },
-          { id: 6, status: "available", orders: [] },
-          { id: 7, status: "reserved", orders: [] },
-          { id: 8, status: "available", orders: [] },
-          { id: 9, status: "available", orders: [] },
-          { id: 10, status: "reserved", orders: [] },
-          { id: 11, status: "available", orders: [] },
-          { id: 12, status: "available", orders: [] },
-          {
-            id: 13,
-            status: "occupied",
-            orders: [
-              {
-                id: "ORD-003",
-                items: 2,
-                total: "$24.75",
-                status: "served",
-                time: "10:40 AM",
-              },
-            ],
-          },
-          { id: 14, status: "available", orders: [] },
-          { id: 15, status: "reserved", orders: [] },
-          { id: 16, status: "available", orders: [] },
-          { id: 17, status: "available", orders: [] },
-          { id: 18, status: "available", orders: [] },
-          { id: 19, status: "available", orders: [] },
-          { id: 20, status: "available", orders: [] },
-        ]);
-
-        setIsLoading(false);
-      }, 1000);
-    };
-
     loadTables();
   }, []);
+  const loadTables = async () => {
+    setIsLoading(true);
+    try {
+      const tablesData = await waiterService.getTables();
+      
+      // Transform API data to match component expectations
+      const transformedTables = tablesData.map(table => ({
+        id: table.tableNumber,
+        tableNumber: table.tableNumber,
+        status: table.status.toLowerCase(), // Convert "Available" to "available"
+        dbId: table.id, // Keep original ID for API calls
+        orders: [], // Will be populated when table is clicked
+        createdAt: table.createdAt,
+        updatedAt: table.updatedAt
+      }));
+      
+      setTables(transformedTables);
+    } catch (error) {
+      console.error('Failed to load tables:', error);
+      // Fallback to empty array on error
+      setTables([]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleTableClick = async (tableId) => {
+    try {
+      // Get the table from local state for basic info
+      const localTable = tables.find((table) => table.id === tableId);
+      if (!localTable) return;
 
-  const handleTableClick = (tableId) => {
-    setSelectedTable(tables.find((table) => table.id === tableId));
+      // Fetch detailed table information including active orders from API
+      const tableDetails = await waiterService.getTableDetails(tableId);
+      
+      // Merge local table info with API details
+      const detailedTable = {
+        ...localTable,
+        orders: tableDetails.activeOrder ? [tableDetails.activeOrder] : [],
+        // Update status if it changed
+        status: tableDetails.status ? tableDetails.status.toLowerCase() : localTable.status
+      };
+      
+      setSelectedTable(detailedTable);
+    } catch (error) {
+      console.error('Failed to fetch table details:', error);
+      // Fallback to local table data
+      setSelectedTable(tables.find((table) => table.id === tableId));
+    }
   };
 
   const handleViewOrderDetails = (order) => {

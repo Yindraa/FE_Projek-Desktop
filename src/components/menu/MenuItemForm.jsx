@@ -16,7 +16,7 @@ export default function MenuItemForm({
     description: "",
     category: "",
     price: "",
-    available: true,
+    availableForOrdering: true,
     image: null,
     imagePreview: null,
   });
@@ -30,9 +30,10 @@ export default function MenuItemForm({
         description: initialData.description || "",
         category: initialData.category || "",
         price: initialData.price ? initialData.price.toString() : "",
-        available:
-          initialData.available !== undefined ? initialData.available : true,
-        image: null,        imagePreview: initialData.image || null,
+        availableForOrdering:
+          initialData.availableForOrdering !== undefined ? initialData.availableForOrdering : true,
+        image: null,
+        imagePreview: initialData.image || null,
       });
     } else {
       // Reset form when adding new item
@@ -41,7 +42,7 @@ export default function MenuItemForm({
         description: "",
         category: categories.length > 0 ? categories[0] : "",
         price: "",
-        available: true,
+        availableForOrdering: true,
         image: null,
         imagePreview: null,
       });
@@ -129,16 +130,6 @@ export default function MenuItemForm({
         ...formData,
         price: Number.parseFloat(formData.price),
       };
-
-      // Debug: Log submission data
-      console.log('Submitting menu item:', {
-        name: submissionData.name,
-        hasImage: !!submissionData.image,
-        imageFile: submissionData.image,
-        imageType: submissionData.image?.type,
-        imageSize: submissionData.image?.size
-      });
-
       onSubmit(submissionData);
     }
   };
@@ -333,15 +324,15 @@ export default function MenuItemForm({
               {/* Availability */}
               <div className="flex items-center">
                 <input
-                  id="available"
-                  name="available"
+                  id="availableForOrdering"
+                  name="availableForOrdering"
                   type="checkbox"
-                  checked={formData.available}
+                  checked={formData.availableForOrdering}
                   onChange={handleChange}
                   className="h-4 w-4 rounded border-gray-300 text-amber-600 focus:ring-amber-500"
                 />
                 <label
-                  htmlFor="available"
+                  htmlFor="availableForOrdering"
                   className="ml-2 block text-sm text-gray-900"
                 >
                   Available for ordering

@@ -10,27 +10,28 @@ import {
   CurrencyDollarIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
+import { waiterService } from "../../services/waiterService";
 
 export default function WaiterDashboard() {
   const [stats, setStats] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
+  const [tables, setTables] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingTables, setIsLoadingTables] = useState(true);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
   const [isEditOrderModalOpen, setIsEditOrderModalOpen] = useState(false);
-
   useEffect(() => {
-    // Simulate API call with mock data
+    // Load dashboard data and tables when component mounts
     const loadDashboardData = async () => {
       setIsLoading(true);
 
-      // Simulate API delay
-      setTimeout(() => {
-        // Mock stats data
+      // Simulate API delay for mock data
+      setTimeout(() => {        // Mock stats data
         setStats([
           {
             name: "Active Tables",
-            value: "8/20",
+            value: "0/0", // Will be updated when tables are loaded
             icon: UserGroupIcon,
             color: "bg-blue-100 text-blue-800",
           },
@@ -42,7 +43,7 @@ export default function WaiterDashboard() {
           },
           {
             name: "Today's Sales",
-            value: "$1,245",
+            value: "Rp 1.245.000",
             icon: CurrencyDollarIcon,
             color: "bg-green-100 text-green-800",
           },
@@ -65,7 +66,7 @@ export default function WaiterDashboard() {
               { name: "Iced Tea", quantity: 1, price: 3.99, notes: "" },
             ],
             itemCount: 4,
-            total: "$38.96",
+            total: "Rp 389.600",
             status: "served",
             time: "10:15 AM",
           },
@@ -88,7 +89,7 @@ export default function WaiterDashboard() {
               },
             ],
             itemCount: 3,
-            total: "$34.97",
+            total: "Rp 349.700",
             status: "in-progress",
             time: "10:30 AM",
           },
@@ -106,7 +107,7 @@ export default function WaiterDashboard() {
               { name: "Tiramisu", quantity: 1, price: 7.99, notes: "" },
             ],
             itemCount: 2,
-            total: "$24.98",
+            total: "Rp 249.800",
             status: "pending-payment",
             time: "10:40 AM",
           },
@@ -124,7 +125,7 @@ export default function WaiterDashboard() {
               { name: "French Fries", quantity: 1, price: 4.99, notes: "" },
             ],
             itemCount: 2,
-            total: "$17.98",
+            total: "Rp 179.800",
             status: "pending",
             time: "10:45 AM",
           },
@@ -132,9 +133,43 @@ export default function WaiterDashboard() {
 
         setIsLoading(false);
       }, 1000);
+    };    const loadTables = async () => {
+      setIsLoadingTables(true);
+      try {
+        const tablesData = await waiterService.getTables();
+        
+        // Transform API data to match component expectations
+        const transformedTables = tablesData.map(table => ({
+          id: table.tableNumber,
+          tableNumber: table.tableNumber,
+          status: table.status.toLowerCase(), // Convert "Available" to "available"
+          dbId: table.id, // Keep original ID for API calls
+        }));
+        
+        setTables(transformedTables);
+
+        // Update stats with real table data
+        const occupiedTables = transformedTables.filter(table => table.status === 'occupied').length;
+        const totalTables = transformedTables.length;
+        
+        setStats(prevStats => 
+          prevStats.map(stat => 
+            stat.name === "Active Tables" 
+              ? { ...stat, value: `${occupiedTables}/${totalTables}` }
+              : stat
+          )
+        );
+      } catch (error) {
+        console.error('Failed to load tables:', error);
+        // Fallback to empty array on error
+        setTables([]);
+      } finally {
+        setIsLoadingTables(false);
+      }
     };
 
     loadDashboardData();
+    loadTables();
   }, []);
 
   const handleViewOrder = (order) => {
@@ -378,9 +413,7 @@ export default function WaiterDashboard() {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Tables Overview */}
+        </div>        {/* Tables Overview */}
         <div className="mt-8 bg-white shadow-md rounded-xl overflow-hidden">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -388,31 +421,36 @@ export default function WaiterDashboard() {
             </h3>
           </div>
           <div className="p-4">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-              {[...Array(12)].map((_, i) => {
-                const status =
-                  i % 3 === 0
-                    ? "available"
-                    : i % 3 === 1
-                    ? "occupied"
-                    : "reserved";
-                return (
+            {isLoadingTables ? (
+              <div className="animate-pulse grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {Array(12)
+                  .fill(0)
+                  .map((_, index) => (
+                    <div key={index} className="h-20 bg-gray-200 rounded-xl"></div>
+                  ))}
+              </div>            ) : tables.length > 0 ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                {tables.map((table) => (
                   <div
-                    key={i}
-                    className={`p-4 rounded-xl shadow text-center ${
-                      status === "available"
+                    key={table.id}
+                    className={`p-4 rounded-xl shadow text-center transition-colors ${
+                      table.status === "available"
                         ? "bg-green-100"
-                        : status === "occupied"
+                        : table.status === "occupied"
                         ? "bg-red-100"
                         : "bg-yellow-100"
                     }`}
                   >
-                    <p className="font-medium">Table {i + 1}</p>
-                    <p className="text-sm capitalize">{status}</p>
+                    <p className="font-medium">Table {table.tableNumber}</p>
+                    <p className="text-sm capitalize">{table.status}</p>
                   </div>
-                );
-              })}
-            </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-500">
+                <p>No tables available</p>
+              </div>
+            )}
           </div>
         </div>
       </div>

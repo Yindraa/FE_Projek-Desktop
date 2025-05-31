@@ -1,6 +1,6 @@
 "use client";
 
-import { Fragment, useState } from "react";
+import { Fragment, useState, useEffect } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import {
   XMarkIcon,
@@ -8,27 +8,7 @@ import {
   MinusIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
-
-// Mock menu items - in a real app, this would come from your database
-const MENU_ITEMS = [
-  { id: 1, name: "Beef Burger", price: 12.99, category: "Main Course" },
-  { id: 2, name: "Caesar Salad", price: 8.99, category: "Appetizer" },
-  { id: 3, name: "Iced Tea", price: 3.99, category: "Beverage" },
-  { id: 4, name: "Margherita Pizza", price: 14.99, category: "Main Course" },
-  { id: 5, name: "French Fries", price: 4.99, category: "Side" },
-  { id: 6, name: "Chocolate Cake", price: 6.99, category: "Dessert" },
-  { id: 7, name: "Chicken Wings", price: 9.99, category: "Appetizer" },
-  { id: 8, name: "Soda", price: 2.99, category: "Beverage" },
-];
-
-// Group menu items by category
-const MENU_BY_CATEGORY = MENU_ITEMS.reduce((acc, item) => {
-  if (!acc[item.category]) {
-    acc[item.category] = [];
-  }
-  acc[item.category].push(item);
-  return acc;
-}, {});
+import { waiterService } from "../../services/waiterService";
 
 export default function NewOrderModal({
   isOpen,
@@ -37,11 +17,44 @@ export default function NewOrderModal({
   onCreateOrder,
 }) {
   const [orderItems, setOrderItems] = useState([]);
-  const [activeCategory, setActiveCategory] = useState(
-    Object.keys(MENU_BY_CATEGORY)[0] || ""
-  );
+  const [menuItems, setMenuItems] = useState([]);
+  const [menuByCategory, setMenuByCategory] = useState({});
+  const [activeCategory, setActiveCategory] = useState("");
   const [customerCount, setCustomerCount] = useState(1);
   const [selectedTableId, setSelectedTableId] = useState(tableId || 1);
+  const [isLoadingMenu, setIsLoadingMenu] = useState(false);
+
+  // Fetch menu items when component mounts or modal opens
+  useEffect(() => {
+    if (isOpen) {
+      loadMenuItems();
+    }
+  }, [isOpen]);  const loadMenuItems = async () => {
+    setIsLoadingMenu(true);
+    try {
+      const availableItems = await waiterService.getMenuItems();
+      
+      setMenuItems(availableItems);
+      
+      // Group items by category using waiterService utility
+      const groupedItems = waiterService.groupMenuItemsByCategory(availableItems);
+      
+      setMenuByCategory(groupedItems);
+      
+      // Set first category as active
+      const categories = Object.keys(groupedItems);
+      if (categories.length > 0) {
+        setActiveCategory(categories[0]);
+      }
+    } catch (error) {
+      console.error('Failed to load menu items:', error);
+      // Set fallback empty state
+      setMenuItems([]);
+      setMenuByCategory({});
+      setActiveCategory('');    } finally {
+      setIsLoadingMenu(false);
+    }
+  };
 
   const addItemToOrder = (menuItem) => {
     const existingItem = orderItems.find(
@@ -218,13 +231,14 @@ export default function NewOrderModal({
                         </div>
                       </div>
                     </div>
-                  </div>
-
-                  <div className="mt-4 flex-1 overflow-hidden flex">
+                  </div>                  <div className="mt-4 flex-1 overflow-hidden flex">
                     {/* Menu Section */}
                     <div className="w-1/2 pr-4 flex flex-col overflow-hidden">
+                      <h4 className="font-medium text-gray-900 mb-2">
+                        Add Items
+                      </h4>
                       <div className="flex space-x-2 overflow-x-auto pb-2">
-                        {Object.keys(MENU_BY_CATEGORY).map((category) => (
+                        {Object.keys(menuByCategory).map((category) => (
                           <button
                             key={category}
                             className={`px-3 py-1 text-sm font-medium rounded-xl whitespace-nowrap ${
@@ -237,26 +251,42 @@ export default function NewOrderModal({
                             {category}
                           </button>
                         ))}
-                      </div>
-
-                      <div className="mt-3 flex-1 overflow-y-auto">
-                        <div className="grid grid-cols-1 gap-2">
-                          {MENU_BY_CATEGORY[activeCategory]?.map((menuItem) => (
-                            <button
-                              key={menuItem.id}
-                              className="flex justify-between items-center p-3 rounded-xl border border-gray-200 hover:bg-amber-50 text-left"
-                              onClick={() => addItemToOrder(menuItem)}
-                            >
-                              <div>
-                                <h4 className="font-medium">{menuItem.name}</h4>
-                                <p className="text-sm text-gray-500">
-                                  ${menuItem.price.toFixed(2)}
-                                </p>
-                              </div>
-                              <PlusIcon className="h-5 w-5 text-amber-600" />
-                            </button>
-                          ))}
-                        </div>
+                      </div>                      <div className="mt-3 flex-1 overflow-y-auto">
+                        {isLoadingMenu ? (
+                          <div className="flex items-center justify-center h-32">
+                            <div className="text-sm text-gray-500">Loading menu...</div>
+                          </div>
+                        ) : Object.keys(menuByCategory).length === 0 ? (
+                          <div className="flex items-center justify-center h-32">
+                            <div className="text-sm text-gray-500">No menu items available</div>
+                          </div>
+                        ) : !menuByCategory[activeCategory] ? (
+                          <div className="flex items-center justify-center h-32">
+                            <div className="text-sm text-gray-500">No items in {activeCategory} category</div>
+                          </div>
+                        ) : (
+                          <div className="grid grid-cols-1 gap-2">
+                            {menuByCategory[activeCategory]?.map((menuItem) => (
+                              <button
+                                key={menuItem.id}
+                                className="flex justify-between items-center p-3 rounded-xl border border-gray-200 hover:bg-amber-50 text-left"
+                                onClick={() => addItemToOrder(menuItem)}
+                              >
+                                <div>                                <h4 className="font-medium">{menuItem.name}</h4>
+                                  <p className="text-sm text-gray-500">
+                                    {waiterService.formatPrice(menuItem.price)}
+                                  </p>
+                                  {menuItem.description && (
+                                    <p className="text-xs text-gray-400 mt-1">
+                                      {menuItem.description}
+                                    </p>
+                                  )}
+                                </div>
+                                <PlusIcon className="h-5 w-5 text-amber-600" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -306,11 +336,8 @@ export default function NewOrderModal({
                                     <PlusIcon className="h-4 w-4 text-gray-600" />
                                   </button>
                                 </div>
-                              </div>
-
-                              <div className="flex justify-between items-center mt-1">
-                                <p className="text-sm text-gray-500">
-                                  ${(item.price * item.quantity).toFixed(2)}
+                              </div>                              <div className="flex justify-between items-center mt-1">                                <p className="text-sm text-gray-500">
+                                  {waiterService.formatPrice(item.price * item.quantity)}
                                 </p>
                                 <button
                                   className="p-1 rounded-full hover:bg-gray-100 text-red-500"
@@ -334,12 +361,9 @@ export default function NewOrderModal({
                             </div>
                           ))}
                         </div>
-                      )}
-
-                      <div className="mt-4 pt-3 border-t border-gray-200">
-                        <div className="flex justify-between font-medium">
+                      )}                      <div className="mt-4 pt-3 border-t border-gray-200">                        <div className="flex justify-between font-medium">
                           <span>Total:</span>
-                          <span>${calculateTotal().toFixed(2)}</span>
+                          <span>{waiterService.formatPrice(calculateTotal())}</span>
                         </div>
                       </div>
                     </div>
