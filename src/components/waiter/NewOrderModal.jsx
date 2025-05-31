@@ -22,14 +22,37 @@ export default function NewOrderModal({
   const [activeCategory, setActiveCategory] = useState("");
   const [customerCount, setCustomerCount] = useState(1);
   const [selectedTableId, setSelectedTableId] = useState(tableId || 1);
-  const [isLoadingMenu, setIsLoadingMenu] = useState(false);
+  const [isLoadingMenu, setIsLoadingMenu] = useState(false);  const [availableTables, setAvailableTables] = useState([]);
+  const [isLoadingTables, setIsLoadingTables] = useState(false);
 
-  // Fetch menu items when component mounts or modal opens
+  // Fetch menu items and tables when component mounts or modal opens
   useEffect(() => {
     if (isOpen) {
       loadMenuItems();
+      loadTables();
+      // Reset to the correct table when modal opens
+      if (tableId) {
+        setSelectedTableId(tableId);
+      }
     }
-  }, [isOpen]);  const loadMenuItems = async () => {
+  }, [isOpen, tableId]);
+  // Update selected table when tableId prop changes
+  useEffect(() => {
+    if (tableId) {
+      setSelectedTableId(tableId);
+    }
+  }, [tableId]);
+
+  // Reset form when modal closes
+  useEffect(() => {
+    if (!isOpen) {
+      setOrderItems([]);
+      setCustomerCount(1);
+      if (tableId) {
+        setSelectedTableId(tableId);
+      }
+    }
+  }, [isOpen, tableId]);  const loadMenuItems = async () => {
     setIsLoadingMenu(true);
     try {
       const availableItems = await waiterService.getMenuItems();
@@ -53,6 +76,24 @@ export default function NewOrderModal({
       setMenuByCategory({});
       setActiveCategory('');    } finally {
       setIsLoadingMenu(false);
+    }
+  };
+  const loadTables = async () => {
+    setIsLoadingTables(true);
+    try {
+      const tables = await waiterService.getTables();
+      setAvailableTables(tables);
+      
+      // If no table is pre-selected and tables are available, set the first table as default
+      if (!tableId && tables.length > 0 && !selectedTableId) {
+        setSelectedTableId(tables[0].tableNumber);
+      }
+    } catch (error) {
+      console.error('Failed to load tables:', error);
+      // Set fallback empty state
+      setAvailableTables([]);
+    } finally {
+      setIsLoadingTables(false);
     }
   };
 
@@ -206,8 +247,7 @@ export default function NewOrderModal({
                             }
                             className="mt-1 block w-24 rounded-xl border-gray-300 shadow-sm focus:border-amber-500 focus:ring-amber-500 sm:text-sm"
                           />
-                        </div>
-                        <div className="ml-4">
+                        </div>                        <div className="ml-4">
                           <label
                             htmlFor="tableSelect"
                             className="block text-sm font-medium text-gray-700"
@@ -221,12 +261,19 @@ export default function NewOrderModal({
                             onChange={(e) =>
                               setSelectedTableId(Number(e.target.value))
                             }
+                            disabled={isLoadingTables}
                           >
-                            {Array.from({ length: 20 }, (_, i) => (
-                              <option key={i + 1} value={i + 1}>
-                                Table {i + 1}
-                              </option>
-                            ))}
+                            {isLoadingTables ? (
+                              <option value="">Loading...</option>
+                            ) : availableTables.length > 0 ? (
+                              availableTables.map((table) => (
+                                <option key={table.tableNumber} value={table.tableNumber}>
+                                  Table {table.tableNumber}
+                                </option>
+                              ))
+                            ) : (
+                              <option value="">No tables available</option>
+                            )}
                           </select>
                         </div>
                       </div>

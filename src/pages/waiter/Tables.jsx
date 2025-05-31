@@ -97,7 +97,6 @@ export default function Tables() {
       updatedTables.find((table) => table.id === selectedTable.id)
     );
   };
-
   const handleCreateOrder = (newOrder) => {
     // In a real app, you would call an API to create the order
     const orderId = `ORD-${Math.floor(Math.random() * 1000)
@@ -111,7 +110,7 @@ export default function Tables() {
     const formattedOrder = {
       id: orderId,
       items: newOrder.items.length,
-      total: `$${newOrder.total.toFixed(2)}`,
+      total: waiterService.formatPrice(newOrder.total),
       status: "pending",
       time: time,
     };
