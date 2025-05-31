@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import Logo from "../../components/common/Logo";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
+  const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [rememberMe, setRememberMe] = useState(false);
   const [error, setError] = useState("");
@@ -15,13 +15,12 @@ export default function LoginPage() {
 
   async function handleSubmit(e) {
     e.preventDefault();
-
     try {
       setError("");
       setLoading(true);
-      await login(email, password, rememberMe);
+      await login(username, password, rememberMe);
     } catch (error) {
-      setError("Failed to sign in: " + error.message);
+      setError("Failed to sign in: " + error);
     } finally {
       setLoading(false);
     }
@@ -68,21 +67,21 @@ export default function LoginPage() {
           <div className="rounded-md -space-y-px">
             <div className="mb-4">
               <label
-                htmlFor="email-address"
+                htmlFor="username"
                 className="block text-sm font-medium text-gray-700 mb-1"
               >
-                Email address
+                Username
               </label>
               <input
-                id="email-address"
-                name="email"
-                type="email"
-                autoComplete="email"
+                id="username"
+                name="username"
+                type="text"
+                autoComplete="username"
                 required
                 className="appearance-none relative block w-full px-3 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-xl focus:outline-none focus:ring-amber-500 focus:border-amber-500 focus:z-10 sm:text-sm"
-                placeholder="Email address (@admin, @chef, @waiter)"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Username"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div>
@@ -180,7 +179,7 @@ export default function LoginPage() {
           </div>
 
           <div className="text-xs text-center text-gray-500 mt-8">
-            <p>Demo accounts: test@admin.com, test@chef.com, test@waiter.com</p>
+            <p>Demo accounts: admin, chef_user, waiter_user1</p>
             <p className="mt-1">Password for all accounts: password</p>
           </div>
         </form>

@@ -3,16 +3,16 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import PageTitle from "../../components/common/PageTitle";
-import UserForm from "../../components/user/UserForm";
-import DeleteUserConfirmation from "../../components/user/DeleteUserConfirmation";
+import UserForm from "../../components/admin/UserForm"; 
+import DeleteUserConfirmation from "../../components/admin/DeleteUserConfirmation";
+import UserActions from "../../components/admin/UserActions"; 
+import UserTable from "../../components/admin/UserTable"; 
 import {
-  PlusIcon,
-  PencilIcon,
-  TrashIcon,
-  MagnifyingGlassIcon,
-  ArrowUpIcon,
-  ArrowDownIcon,
-} from "@heroicons/react/24/outline";
+  getAllUsers,
+  createUserAPI,
+  updateUserRole,
+  deleteUserAPI,
+} from "../../services/adminService";
 
 export default function UserManagement() {
   const [users, setUsers] = useState([]);
@@ -39,64 +39,27 @@ export default function UserManagement() {
       try {
         setIsLoading(true);
         setError(null);
+        const data = await getAllUsers();
+        // Adapt backend data to frontend shape if needed
+        setUsers(
+          data.map((user) => ({
+            id: user.id,
+            username: user.username,
+            name: user.name,
 
-        // Use mock data directly since API isn't ready
-        setTimeout(() => {
-          setUsers([
-            {
-              id: 1,
-              username: "admin_user",
-              firstName: "Admin",
-              lastName: "User",
-              email: "admin@example.com",
-              phoneNumber: "+1234567890",
-              role: "admin",
-              active: true,
-              avatar: "/placeholder.svg?height=40&width=40",
-            },
-            {
-              id: 2,
-              username: "chef_user",
-              firstName: "Chef",
-              lastName: "User",
-              email: "chef@example.com",
-              phoneNumber: "+1234567891",
-              role: "chef",
-              active: true,
-              avatar: "/placeholder.svg?height=40&width=40",
-            },
-            {
-              id: 3,
-              username: "waiter_user1",
-              firstName: "Waiter",
-              lastName: "One",
-              email: "waiter1@example.com",
-              phoneNumber: "+1234567892",
-              role: "waiter",
-              active: true,
-              avatar: "/placeholder.svg?height=40&width=40",
-            },
-            {
-              id: 4,
-              username: "waiter_user2",
-              firstName: "Waiter",
-              lastName: "Two",
-              email: "waiter2@example.com",
-              phoneNumber: "+1234567893",
-              role: "waiter",
-              active: false,
-              avatar: "/placeholder.svg?height=40&width=40",
-            },
-          ]);
-          setIsLoading(false);
-        }, 1000); // Simulate API delay
+            role: user.role || "", // Store role as it comes from API (likely uppercase)
+            active: user.status === "ACTIVE",
+            avatar: "/placeholder.svg?height=40&width=40",
+          }))
+        );
+        setIsLoading(false);
       } catch (err) {
-        console.error("Error loading users:", err);
-        setError("Failed to load users. Please try again.");
+        setError(
+          err.response?.data?.message || err.message || "Failed to load users. Please try again."
+        );
         setIsLoading(false);
       }
     };
-
     loadUsers();
   }, []);
 
@@ -124,51 +87,33 @@ export default function UserManagement() {
   const handleAddSubmit = async (formData) => {
     try {
       setIsSubmitting(true);
-
-      // Create a mock user with the form data
-      const newUser = {
-        id: Date.now(),
-        ...formData,
-        avatar: "/placeholder.svg?height=40&width=40",
+      setError(null);
+      // API expects: username, password, role, name
+      const reqBody = {
+        username: formData.username,
+        password: formData.password,
+        role: formData.role.toUpperCase(), // Ensure role is uppercase
+        name: formData.name, // Use the new single 'name' field
       };
-
-      // Update local state with the new user
-      setUsers((prevUsers) => [...prevUsers, newUser]);
-
-      // Close the modal
+      const newUser = await createUserAPI(reqBody);
+      setUsers((prevUsers) => [
+        ...prevUsers,
+        {
+          id: newUser.id,
+          username: newUser.username,
+          name: newUser.name,
+          email: newUser.email || "-", // Keep for display if API returns it
+          phoneNumber: newUser.phoneNumber || "-", // Keep for display if API returns it
+          role: newUser.role?.toUpperCase() || "", // Store role as it comes from API
+          active: newUser.status === "ACTIVE",
+          avatar: "/placeholder.svg?height=40&width=40",
+        },
+      ]);
       setIsAddModalOpen(false);
     } catch (error) {
-      console.error("Error adding user:", error);
-      setError("Failed to add user. Please try again.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  // Update the handleEditSubmit function to use mock data
-  const handleEditSubmit = async (formData) => {
-    try {
-      setIsSubmitting(true);
-
-      // Create updated user with the form data
-      const updatedUser = {
-        ...editingUser,
-        ...formData,
-      };
-
-      // Update local state with the updated user
-      setUsers((prevUsers) =>
-        prevUsers.map((user) =>
-          user.id === editingUser.id ? updatedUser : user
-        )
+      setError(
+        error.response?.data?.message || error.message || "Failed to add user. Please try again."
       );
-
-      // Close the modal
-      setIsEditModalOpen(false);
-      setEditingUser(null);
-    } catch (error) {
-      console.error("Error updating user:", error);
-      setError("Failed to update user. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -178,22 +123,23 @@ export default function UserManagement() {
   const handleEditRoleSubmit = async (formData) => {
     try {
       setIsSubmitting(true);
-
-      // Update local state with the updated user role
+      setError(null);
+      const updated = await updateUserRole(editingUser.id, formData.role?.toUpperCase());
       setUsers((prevUsers) =>
         prevUsers.map((user) =>
-          user.id === editingUser.id ? { ...user, role: formData.role } : user
+          user.id === editingUser.id
+            ? { ...user, role: updated.role || "", active: updated.status === "ACTIVE" } // Use role from API response
+            : user
         )
       );
-
-      // Close the modal
-      setIsEditRoleModalOpen(false);
       setEditingUser(null);
     } catch (error) {
-      console.error("Error updating user role:", error);
-      setError("Failed to update user role. Please try again.");
+      setError(
+        error.response?.data?.message || error.message || "Failed to update user role. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
+      setIsEditRoleModalOpen(false); // Hide modal regardless of success or error
     }
   };
 
@@ -201,20 +147,18 @@ export default function UserManagement() {
   const handleDeleteConfirm = async () => {
     try {
       setIsSubmitting(true);
-
-      // Update local state by removing the deleted user
-      setUsers((prevUsers) =>
-        prevUsers.filter((user) => user.id !== deletingUser.id)
-      );
-
-      // Close the modal
-      setIsDeleteModalOpen(false);
+      setError(null);
+      await deleteUserAPI(deletingUser.id);
+      setUsers((prevUsers) => prevUsers.filter((user) => user.id !== deletingUser.id));
+      // setIsDeleteModalOpen(false); // Moved to finally
       setDeletingUser(null);
     } catch (error) {
-      console.error("Error deleting user:", error);
-      setError("Failed to delete user. Please try again.");
+      setError(
+        error.response?.data?.message || error.message || "Failed to delete user. Please try again."
+      );
     } finally {
       setIsSubmitting(false);
+      setIsDeleteModalOpen(false); // Hide modal regardless of success or error
     }
   };
 
@@ -228,11 +172,11 @@ export default function UserManagement() {
 
   // Filter and sort users
   const filteredUsers = users.filter((user) => {
-    const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
+    const fullName = user.name ? user.name.toLowerCase() : ''; // Use user.name
     const matchesSearch =
       fullName.includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = selectedRole === "all" || user.role === selectedRole;
+      (user.email && user.email.toLowerCase().includes(searchTerm.toLowerCase()));
+    const matchesRole = selectedRole === "all" || (user.role && user.role.toLowerCase() === selectedRole); // Compare user.role (now uppercase) with selectedRole (lowercase)
     return matchesSearch && matchesRole;
   });
 
@@ -240,8 +184,8 @@ export default function UserManagement() {
     let aValue, bValue;
 
     if (sortConfig.key === "name") {
-      aValue = `${a.firstName} ${a.lastName}`;
-      bValue = `${b.firstName} ${b.lastName}`;
+      aValue = a.name || ''; // Use a.name
+      bValue = b.name || ''; // Use b.name
     } else {
       aValue = a[sortConfig.key];
       bValue = b[sortConfig.key];
@@ -255,6 +199,32 @@ export default function UserManagement() {
     }
     return 0;
   });
+
+
+  const handleEditSubmit = async (formData) => {
+    try {
+      setIsSubmitting(true);
+      setError(null);
+      // This modal is now only for editing the role.
+      // If a full edit form is needed, it would be separate.
+      const updated = await updateUserRole(editingUser.id, formData.role.toUpperCase());
+      setUsers((prevUsers) =>
+        prevUsers.map((user) =>
+          user.id === editingUser.id
+            ? { ...user, role: updated.role?.toUpperCase() || "", active: updated.status === "ACTIVE" }
+            : user
+        )
+      );
+      setIsEditModalOpen(false);
+      setEditingUser(null);
+    } catch (error) {
+      setError(
+        error.response?.data?.message || error.message || "Failed to update user role. Please try again."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <DashboardLayout role="admin">
@@ -288,220 +258,24 @@ export default function UserManagement() {
         )}
 
         {/* Filters and Actions */}
-        <div className="bg-white shadow-md rounded-xl mb-6 p-4">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between space-y-3 md:space-y-0">
-            <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
-              {/* Search */}
-              <div className="relative">
-                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <MagnifyingGlassIcon className="h-5 w-5 text-gray-400" />
-                </div>
-                <input
-                  type="text"
-                  className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm"
-                  placeholder="Search users..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-
-              {/* Role Filter */}
-              <div>
-                <select
-                  className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-amber-500 focus:border-amber-500 sm:text-sm rounded-xl"
-                  value={selectedRole}
-                  onChange={(e) => setSelectedRole(e.target.value)}
-                >
-                  <option value="all">All Roles</option>
-                  <option value="admin">Admin</option>
-                  <option value="chef">Chef</option>
-                  <option value="waiter">Waiter</option>
-                </select>
-              </div>
-            </div>
-
-            {/* Add Button */}
-            <button
-              type="button"
-              onClick={handleAddUser}
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl shadow-sm text-white bg-amber-600 hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
-            >
-              <PlusIcon className="-ml-1 mr-2 h-5 w-5" />
-              Add User
-            </button>
-          </div>
-        </div>
+        <UserActions
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedRole={selectedRole}
+          onRoleChange={setSelectedRole}
+          onAddUser={handleAddUser}
+        />
 
         {/* Users Table */}
-        <div className="bg-white shadow-md rounded-xl overflow-hidden">
-          <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-            <h3 className="text-lg leading-6 font-medium text-gray-900">
-              Staff Members
-            </h3>
-            <p className="mt-1 text-sm text-gray-500">
-              {filteredUsers.length} users found
-            </p>
-          </div>
-
-          <div className="overflow-x-auto">
-            {isLoading ? (
-              <div className="animate-pulse p-4">
-                <div className="h-8 bg-gray-200 rounded mb-4"></div>
-                {Array(5)
-                  .fill(0)
-                  .map((_, index) => (
-                    <div
-                      key={index}
-                      className="h-16 bg-gray-200 rounded mb-4"
-                    ></div>
-                  ))}
-              </div>
-            ) : (
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort("name")}
-                    >
-                      <div className="flex items-center">
-                        Name
-                        {sortConfig.key === "name" &&
-                          (sortConfig.direction === "ascending" ? (
-                            <ArrowUpIcon className="h-4 w-4 ml-1" />
-                          ) : (
-                            <ArrowDownIcon className="h-4 w-4 ml-1" />
-                          ))}
-                      </div>
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort("email")}
-                    >
-                      <div className="flex items-center">
-                        Email
-                        {sortConfig.key === "email" &&
-                          (sortConfig.direction === "ascending" ? (
-                            <ArrowUpIcon className="h-4 w-4 ml-1" />
-                          ) : (
-                            <ArrowDownIcon className="h-4 w-4 ml-1" />
-                          ))}
-                      </div>
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer"
-                      onClick={() => handleSort("role")}
-                    >
-                      <div className="flex items-center">
-                        Role
-                        {sortConfig.key === "role" &&
-                          (sortConfig.direction === "ascending" ? (
-                            <ArrowUpIcon className="h-4 w-4 ml-1" />
-                          ) : (
-                            <ArrowDownIcon className="h-4 w-4 ml-1" />
-                          ))}
-                      </div>
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Status
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {sortedUsers.length > 0 ? (
-                    sortedUsers.map((user) => (
-                      <tr key={user.id} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10">
-                              <img
-                                className="h-10 w-10 rounded-full"
-                                src={
-                                  user.avatar ||
-                                  "/placeholder.svg?height=40&width=40"
-                                }
-                                alt=""
-                              />
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {user.firstName} {user.lastName}
-                              </div>
-                              <div className="text-sm text-gray-500">
-                                {user.username}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">
-                            {user.email}
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {user.phoneNumber}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          <span className="capitalize">{user.role}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              user.active
-                                ? "bg-green-100 text-green-800"
-                                : "bg-red-100 text-red-800"
-                            }`}
-                          >
-                            {user.active ? "Active" : "Inactive"}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                          <button
-                            onClick={() => handleEditRole(user)}
-                            className="text-amber-600 hover:text-amber-900 mr-4"
-                            title="Edit Role"
-                          >
-                            <PencilIcon className="h-5 w-5" />
-                            <span className="sr-only">Edit Role</span>
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(user)}
-                            className="text-red-600 hover:text-red-900"
-                            title="Delete User"
-                          >
-                            <TrashIcon className="h-5 w-5" />
-                            <span className="sr-only">Delete</span>
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  ) : (
-                    <tr>
-                      <td
-                        colSpan="5"
-                        className="px-6 py-4 text-center text-sm text-gray-500"
-                      >
-                        No users found
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            )}
-          </div>
-        </div>
+        <UserTable
+          users={sortedUsers}
+          isLoading={isLoading}
+          sortConfig={sortConfig}
+          onSort={handleSort}
+          onEditRole={handleEditRole}
+          onDeleteUser={handleDeleteClick}
+          filteredUsersCount={filteredUsers.length}
+        />
       </div>
 
       {/* Add User Modal */}
@@ -510,31 +284,36 @@ export default function UserManagement() {
         onClose={() => setIsAddModalOpen(false)}
         onSubmit={handleAddSubmit}
         isLoading={isSubmitting}
+        // isEditMode is false by default, so it's an "Add User" form
       />
 
-      {/* Edit User Modal */}
+      {/* Edit User Modal - This now only handles ROLE EDIT via isEditMode=true on UserForm */}
+      {/* If a full "Edit User Details" form is needed, a new state/modal instance would be better */}
       <UserForm
-        isOpen={isEditModalOpen}
+        isOpen={isEditModalOpen} // This was for the general edit user modal
         onClose={() => {
           setIsEditModalOpen(false);
           setEditingUser(null);
         }}
-        onSubmit={handleEditSubmit}
+        onSubmit={handleEditSubmit} // This submits only role
         initialData={editingUser}
         isLoading={isSubmitting}
+        isEditMode={true} // This tells UserForm to only show Role field
       />
 
-      {/* Edit Role Modal */}
+      {/* Edit Role Modal - This is the specific modal for editing only the role */}
+      {/* It seems isEditModalOpen and isEditRoleModalOpen might be redundant if UserForm's isEditMode handles it */}
+      {/* For clarity, let's assume the UserTable's "Edit Role" button triggers isEditRoleModalOpen */}
       <UserForm
         isOpen={isEditRoleModalOpen}
         onClose={() => {
           setIsEditRoleModalOpen(false);
           setEditingUser(null);
         }}
-        onSubmit={handleEditRoleSubmit}
+        onSubmit={handleEditRoleSubmit} // This specifically handles role update
         initialData={editingUser}
         isLoading={isSubmitting}
-        isEditMode={true}
+        isEditMode={true} // Crucial: tells UserForm to only show relevant fields for role editing
       />
 
       {/* Delete Confirmation Modal */}
