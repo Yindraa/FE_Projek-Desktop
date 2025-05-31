@@ -1,8 +1,20 @@
 export default function ReceiptTemplate({ order, items }) {
   // Calculate subtotal
   const subtotal = items.reduce((total, item) => {
-    const price = Number.parseFloat(item.price.replace("$", ""));
-    return total + price * item.quantity;
+    // Support both old and new structure
+    let price = 0;
+    if (item.menuItem && item.menuItem.price !== undefined) {
+      price =
+        typeof item.menuItem.price === "string"
+          ? parseFloat(item.menuItem.price)
+          : item.menuItem.price;
+    } else if (item.price !== undefined) {
+      price =
+        typeof item.price === "string"
+          ? parseFloat(item.price.replace("$", "").replace("Rp", ""))
+          : item.price;
+    }
+    return total + (price || 0) * (item.quantity || 0);
   }, 0);
 
   // Calculate tax (assuming 10%)
@@ -34,41 +46,58 @@ export default function ReceiptTemplate({ order, items }) {
           {dateString} - {timeString}
         </p>
         <p>
-          Order: {order.id} - Table: {order.table}
+          Order: {order?.id} - Table:{" "}
+          {order?.table?.tableNumber || order?.table || "-"}
         </p>
       </div>
 
       <div className="receipt-divider"></div>
 
       <div>
-        {items.map((item) => (
-          <div key={item.id} className="receipt-item">
-            <div className="receipt-item-details">
-              {item.quantity} x {item.name}
-              {item.notes && (
-                <div style={{ fontSize: "10px" }}>{item.notes}</div>
-              )}
+        {items.map((item, idx) => {
+          const name = item.menuItem?.name || item.name || "-";
+          const notes = item.notes;
+          let price = 0;
+          if (item.menuItem && item.menuItem.price !== undefined) {
+            price =
+              typeof item.menuItem.price === "string"
+                ? parseFloat(item.menuItem.price)
+                : item.menuItem.price;
+          } else if (item.price !== undefined) {
+            price =
+              typeof item.price === "string"
+                ? parseFloat(item.price.replace("$", "").replace("Rp", ""))
+                : item.price;
+          }
+          return (
+            <div key={idx} className="receipt-item">
+              <div className="receipt-item-details">
+                {item.quantity} x {name}
+                {notes && <div style={{ fontSize: "10px" }}>{notes}</div>}
+              </div>
+              <div className="receipt-item-price">
+                {price ? `Rp ${price.toLocaleString("id-ID")}` : "-"}
+              </div>
             </div>
-            <div className="receipt-item-price">{item.price}</div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       <div className="receipt-divider"></div>
 
       <div className="receipt-item">
         <div>Subtotal</div>
-        <div>${subtotal.toFixed(2)}</div>
+        <div>Rp {subtotal.toLocaleString("id-ID")}</div>
       </div>
 
       <div className="receipt-item">
         <div>Tax ({(taxRate * 100).toFixed(0)}%)</div>
-        <div>${tax.toFixed(2)}</div>
+        <div>Rp {tax.toLocaleString("id-ID")}</div>
       </div>
 
       <div className="receipt-total">
         <div>TOTAL</div>
-        <div>${total.toFixed(2)}</div>
+        <div>Rp {total.toLocaleString("id-ID")}</div>
       </div>
 
       <div className="receipt-divider"></div>

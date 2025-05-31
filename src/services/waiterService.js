@@ -48,6 +48,48 @@ waiterAPI.interceptors.response.use(
   }
 );
 
+// Utility function to map backend order to frontend format
+export function mapOrderFromApi(order) {
+  return {
+    id: order.id,
+    table: order.table?.tableNumber || order.table?.id || '-',
+    customer: order.customerName || 'Walk-in',
+    items: Array.isArray(order.orderItems)
+      ? order.orderItems.map(oi => ({
+          name: oi.menuItem?.name || '-',
+          quantity: oi.quantity,
+          price: oi.menuItem?.price || 0,
+          notes: oi.notes || '',
+        }))
+      : [],
+    total: typeof order.totalAmount === 'number' ? order.totalAmount : parseFloat(order.totalAmount) || 0,
+    // Map BE status to FE status for UI logic and button visibility
+    status: (() => {
+      switch (order.status) {
+        case 'RECEIVED': // Initial state, before sent to kitchen
+          return 'pending'; // Show 'Send to Kitchen' button (Waiter)
+        case 'IN_QUEUE':
+          return 'in-queue'; // No button in Waiter, only visible in Chef
+        case 'IN_PROCESS':
+          return 'in-process'; // No button in Waiter, only visible in Chef
+        case 'READY':
+          return 'ready'; // Show 'Served' button (Waiter)
+        case 'DELIVERED': // After ready, delivered to table
+          return 'delivered'; // Show 'Process Payment' button (Waiter)
+        case 'PENDING_PAYMENT':
+          return 'pending-payment'; // No button, handled in Payments page
+        case 'COMPLETED':
+          return 'completed'; // No button
+        default:
+          return (order.status || '').toLowerCase();
+      }
+    })(),
+    time: order.orderTime ? new Date(order.orderTime).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }) : '-',
+    createdAt: order.createdAt,
+    // Add other fields as needed
+  };
+}
+
 // Waiter Service Functions
 export const waiterService = {
   // ===== MENU SERVICES =====
@@ -150,8 +192,11 @@ export const waiterService = {
    */
   getOrders: async (filters = {}) => {
     try {
-      const response = await waiterAPI.get('/orders', { params: filters });
-      return response.data;
+      // Use the correct endpoint for waiter orders
+      const response = await waiterAPI.get('/waiter/orders', { params: filters });
+      // Map API response to match frontend expectations
+      const orders = Array.isArray(response.data) ? response.data.map(mapOrderFromApi) : [];
+      return orders;
     } catch (error) {
       console.error('Failed to fetch orders:', error);
       throw new Error('Failed to load orders. Please try again.');
@@ -188,6 +233,35 @@ export const waiterService = {
       throw new Error('Failed to update order status. Please try again.');
     }
   },
+  
+  updateOrderStatusByAction: async (orderId, action) => {
+    try {
+      const response = await waiterAPI.patch(`/waiter/order/${orderId}/status`, { action });
+      // Map API response to FE format
+      return mapOrderFromApi(response.data);
+    } catch (error) {
+      console.error('Failed to update order status by action:', error);
+      throw new Error(
+        error.response?.data?.message || 'Failed to update order status. Please try again.'
+      );
+    }
+  },
+
+  /**
+   * Get order details for waiter (correct endpoint)
+   * @param {string} orderId - Order ID
+   * @returns {Promise<Object>} Order details
+   */
+  getOrderDetails: async (orderId) => {
+    try {
+      const response = await waiterAPI.get(`/waiter/order/${orderId}`);
+      return response.data;
+    } catch (error) {
+      console.error('Failed to fetch order details:', error);
+      throw new Error('Failed to load order details.');
+    }
+  },
+
   // ===== TABLE SERVICES =====
   
   /**
@@ -317,5 +391,14 @@ export const waiterService = {
     return 0;
   }
 };
+
+/**
+ * Get waiter dashboard stats (active tables, total tables, pending orders, today sales)
+ * @returns {Promise<{totalTables:number, occupiedTables:number, pendingOrders:number, todaySales:number}>}
+ */
+export async function getWaiterDashboardStats() {
+  const response = await waiterAPI.get('/waiter/dashboard-stats');
+  return response.data;
+}
 
 export default waiterService;

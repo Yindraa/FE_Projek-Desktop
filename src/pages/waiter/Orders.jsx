@@ -1,103 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import NewOrderModal from "../../components/waiter/NewOrderModal";
 import EditOrderModal from "../../components/waiter/EditOrderModal";
-import { PlusIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
-
-// Mock data - completely self-contained
-const MOCK_ORDERS = [
-  {
-    id: "ORD-001",
-    table: 5,
-    customer: "Walk-in",
-    items: [
-      {
-        name: "Grilled Salmon",
-        quantity: 2,
-        price: 18.99,
-        notes: "Medium well",
-      },
-      {
-        name: "Caesar Salad",
-        quantity: 1,
-        price: 9.99,
-        notes: "No croutons",
-      },
-      { name: "Garlic Bread", quantity: 1, price: 4.99, notes: "" },
-    ],
-    total: 52.96,
-    status: "served",
-    time: "10:15 AM",
-  },
-  {
-    id: "ORD-002",
-    table: 3,
-    customer: "John Smith",
-    items: [
-      {
-        name: "Margherita Pizza",
-        quantity: 1,
-        price: 14.99,
-        notes: "Extra cheese",
-      },
-      {
-        name: "Chicken Wings",
-        quantity: 2,
-        price: 12.99,
-        notes: "Spicy",
-      },
-    ],
-    total: 40.97,
-    status: "in-progress",
-    time: "10:30 AM",
-  },
-  {
-    id: "ORD-003",
-    table: 8,
-    customer: "Sarah Johnson",
-    items: [
-      {
-        name: "Spaghetti Carbonara",
-        quantity: 1,
-        price: 16.99,
-        notes: "Al dente",
-      },
-      { name: "Tiramisu", quantity: 1, price: 7.99, notes: "" },
-    ],
-    total: 24.98,
-    status: "pending-payment",
-    time: "10:40 AM",
-  },
-  {
-    id: "ORD-004",
-    table: 1,
-    customer: "Walk-in",
-    items: [
-      {
-        name: "Beef Burger",
-        quantity: 1,
-        price: 12.99,
-        notes: "No onions",
-      },
-      {
-        name: "French Fries",
-        quantity: 1,
-        price: 4.99,
-        notes: "Extra salt",
-      },
-      { name: "Soda", quantity: 2, price: 2.99, notes: "" },
-    ],
-    total: 23.96,
-    status: "pending",
-    time: "10:45 AM",
-  },
-];
+import { waiterService } from "../../services/waiterService";
+import { useNotification } from "../../contexts/NotificationContext";
 
 export default function Orders() {
-  // Use static mock data instead of loading from an API
-  const [orders, setOrders] = useState(MOCK_ORDERS);
+  const { showError } = useNotification();
+  const [orders, setOrders] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
   const [activeTab, setActiveTab] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -105,6 +20,27 @@ export default function Orders() {
   // Modal states
   const [isNewOrderModalOpen, setIsNewOrderModalOpen] = useState(false);
   const [isEditOrderModalOpen, setIsEditOrderModalOpen] = useState(false);
+
+  // Fetch orders from API
+  useEffect(() => {
+    const fetchOrders = async () => {
+      setIsLoading(true);
+      setError("");
+      try {
+        const data = await waiterService.getOrders();
+        setOrders(Array.isArray(data) ? data : []);
+      } catch (err) {
+        setError(err.message || "Failed to load orders.");
+        showError(
+          "Failed to load orders",
+          err.message || "An error occurred while fetching orders."
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
 
   const filteredOrders = orders.filter((order) => {
     // Filter by status
@@ -116,11 +52,10 @@ export default function Orders() {
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
       return (
-        order.id.toLowerCase().includes(searchLower) ||
-        order.customer.toLowerCase().includes(searchLower) ||
-        order.items.some((item) =>
-          item.name.toLowerCase().includes(searchLower)
-        )
+        order.id?.toLowerCase().includes(searchLower) ||
+        (order.customer || "").toLowerCase().includes(searchLower) ||
+        (Array.isArray(order.items) &&
+          order.items.some((item) => item.name?.toLowerCase().includes(searchLower)))
       );
     }
 
@@ -183,6 +118,21 @@ export default function Orders() {
   const openEditOrderModal = (order) => {
     setSelectedOrder(order);
     setIsEditOrderModalOpen(true);
+  };
+
+  // Handler untuk transisi status order via API
+  const handleOrderAction = async (order, action) => {
+    try {
+      const updatedOrder = await waiterService.updateOrderStatusByAction(order.id, action);
+      setOrders((prevOrders) =>
+        prevOrders.map((o) => (o.id === updatedOrder.id ? updatedOrder : o))
+      );
+    } catch (err) {
+      showError(
+        'Failed to update order status',
+        err.message || 'An error occurred while updating order status.'
+      );
+    }
   };
 
   return (
@@ -279,7 +229,15 @@ export default function Orders() {
 
         {/* Orders List */}
         <div className="space-y-6">
-          {filteredOrders.length > 0 ? (
+          {isLoading ? (
+            <div className="bg-white shadow-md rounded-xl p-6 text-center animate-pulse">
+              <p className="text-gray-400">Loading orders...</p>
+            </div>
+          ) : error ? (
+            <div className="bg-white shadow-md rounded-xl p-6 text-center">
+              <p className="text-red-500">{error}</p>
+            </div>
+          ) : filteredOrders.length > 0 ? (
             filteredOrders.map((order) => (
               <div
                 key={order.id}
@@ -387,40 +345,26 @@ export default function Orders() {
                     </button>
                     {order.status === "pending" && (
                       <button
-                        onClick={() =>
-                          handleStatusChange(order.id, "in-progress")
-                        }
+                        onClick={() => handleOrderAction(order, "send_to_kitchen")}
                         className="px-3 py-1 border border-transparent text-sm font-medium rounded-xl text-white bg-amber-600 hover:bg-amber-700"
                       >
                         Send to Kitchen
                       </button>
                     )}
-                    {order.status === "in-progress" && (
+                    {order.status === "ready" && (
                       <button
-                        onClick={() => handleStatusChange(order.id, "served")}
+                        onClick={() => handleOrderAction(order, "served")}
                         className="px-3 py-1 border border-transparent text-sm font-medium rounded-xl text-white bg-green-600 hover:bg-green-700"
                       >
-                        Mark as Served
+                        Served
                       </button>
                     )}
-                    {order.status === "served" && (
+                    {order.status === "delivered" && (
                       <button
-                        onClick={() =>
-                          handleStatusChange(order.id, "pending-payment")
-                        }
-                        className="px-3 py-1 border border-transparent text-sm font-medium rounded-xl text-white bg-purple-600 hover:bg-purple-700"
-                      >
-                        Request Payment
-                      </button>
-                    )}
-                    {order.status === "pending-payment" && (
-                      <button
-                        onClick={() =>
-                          alert(`Process Payment for Order ${order.id}`)
-                        }
+                        onClick={() => handleOrderAction(order, "proceed_payment")}
                         className="px-3 py-1 border border-transparent text-sm font-medium rounded-xl text-white bg-blue-600 hover:bg-blue-700"
                       >
-                        Process Payment
+                        Proceed Payment
                       </button>
                     )}
                   </div>

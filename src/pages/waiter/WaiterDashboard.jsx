@@ -10,7 +10,7 @@ import {
   CurrencyDollarIcon,
   UserGroupIcon,
 } from "@heroicons/react/24/outline";
-import { waiterService } from "../../services/waiterService";
+import { waiterService, getWaiterDashboardStats, mapOrderFromApi } from "../../services/waiterService";
 
 export default function WaiterDashboard() {
   const [stats, setStats] = useState([]);
@@ -23,144 +23,74 @@ export default function WaiterDashboard() {
   const [isEditOrderModalOpen, setIsEditOrderModalOpen] = useState(false);
   useEffect(() => {
     // Load dashboard data and tables when component mounts
-    const loadDashboardData = async () => {
+    const loadDashboardStats = async () => {
       setIsLoading(true);
-
-      // Simulate API delay for mock data
-      setTimeout(() => {        // Mock stats data
+      try {
+        const stats = await getWaiterDashboardStats();
         setStats([
           {
             name: "Active Tables",
-            value: "0/0", // Will be updated when tables are loaded
+            value: `${stats.occupiedTables}/${stats.totalTables}`,
             icon: UserGroupIcon,
             color: "bg-blue-100 text-blue-800",
           },
           {
             name: "Pending Orders",
-            value: 5,
+            value: stats.pendingOrders,
             icon: ClipboardDocumentListIcon,
             color: "bg-amber-100 text-amber-800",
           },
           {
             name: "Today's Sales",
-            value: "Rp 1.245.000",
+            value: `Rp ${Number(stats.todaySales).toLocaleString("id-ID")}`,
             icon: CurrencyDollarIcon,
             color: "bg-green-100 text-green-800",
           },
         ]);
-
-        // Mock recent orders data with more detailed information
-        setRecentOrders([
+        // Normalize recentOrders using the shared mapping utility
+        setRecentOrders(Array.isArray(stats.recentOrders) ? stats.recentOrders.map(mapOrderFromApi) : []);
+      } catch (error) {
+        setStats([
           {
-            id: "ORD-001",
-            table: 5,
-            customer: "Walk-in",
-            items: [
-              {
-                name: "Beef Burger",
-                quantity: 2,
-                price: 12.99,
-                notes: "No pickles",
-              },
-              { name: "Caesar Salad", quantity: 1, price: 8.99, notes: "" },
-              { name: "Iced Tea", quantity: 1, price: 3.99, notes: "" },
-            ],
-            itemCount: 4,
-            total: "Rp 389.600",
-            status: "served",
-            time: "10:15 AM",
+            name: "Active Tables",
+            value: "0/0",
+            icon: UserGroupIcon,
+            color: "bg-blue-100 text-blue-800",
           },
           {
-            id: "ORD-002",
-            table: 3,
-            customer: "John Smith",
-            items: [
-              {
-                name: "Margherita Pizza",
-                quantity: 1,
-                price: 14.99,
-                notes: "Extra cheese",
-              },
-              {
-                name: "Chicken Wings",
-                quantity: 2,
-                price: 9.99,
-                notes: "Spicy",
-              },
-            ],
-            itemCount: 3,
-            total: "Rp 349.700",
-            status: "in-progress",
-            time: "10:30 AM",
+            name: "Pending Orders",
+            value: 0,
+            icon: ClipboardDocumentListIcon,
+            color: "bg-amber-100 text-amber-800",
           },
           {
-            id: "ORD-003",
-            table: 8,
-            customer: "Sarah Johnson",
-            items: [
-              {
-                name: "Spaghetti Carbonara",
-                quantity: 1,
-                price: 16.99,
-                notes: "",
-              },
-              { name: "Tiramisu", quantity: 1, price: 7.99, notes: "" },
-            ],
-            itemCount: 2,
-            total: "Rp 249.800",
-            status: "pending-payment",
-            time: "10:40 AM",
-          },
-          {
-            id: "ORD-004",
-            table: 1,
-            customer: "Walk-in",
-            items: [
-              {
-                name: "Beef Burger",
-                quantity: 1,
-                price: 12.99,
-                notes: "No onions",
-              },
-              { name: "French Fries", quantity: 1, price: 4.99, notes: "" },
-            ],
-            itemCount: 2,
-            total: "Rp 179.800",
-            status: "pending",
-            time: "10:45 AM",
+            name: "Today's Sales",
+            value: "Rp 0",
+            icon: CurrencyDollarIcon,
+            color: "bg-green-100 text-green-800",
           },
         ]);
-
+        setRecentOrders([]);
+      } finally {
         setIsLoading(false);
-      }, 1000);
-    };    const loadTables = async () => {
+      }
+    };
+    const loadTables = async () => {
       setIsLoadingTables(true);
       try {
         const tablesData = await waiterService.getTables();
-        
+
         // Transform API data to match component expectations
-        const transformedTables = tablesData.map(table => ({
+        const transformedTables = tablesData.map((table) => ({
           id: table.tableNumber,
           tableNumber: table.tableNumber,
           status: table.status.toLowerCase(), // Convert "Available" to "available"
           dbId: table.id, // Keep original ID for API calls
         }));
-        
-        setTables(transformedTables);
 
-        // Update stats with real table data
-        const occupiedTables = transformedTables.filter(table => table.status === 'occupied').length;
-        const totalTables = transformedTables.length;
-        
-        setStats(prevStats => 
-          prevStats.map(stat => 
-            stat.name === "Active Tables" 
-              ? { ...stat, value: `${occupiedTables}/${totalTables}` }
-              : stat
-          )
-        );
+        setTables(transformedTables);
       } catch (error) {
-        console.error('Failed to load tables:', error);
+        console.error("Failed to load tables:", error);
         // Fallback to empty array on error
         setTables([]);
       } finally {
@@ -168,7 +98,7 @@ export default function WaiterDashboard() {
       }
     };
 
-    loadDashboardData();
+    loadDashboardStats();
     loadTables();
   }, []);
 
@@ -355,20 +285,20 @@ export default function WaiterDashboard() {
                           {order.id}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          Table {order.table}
+                          {order.table ? `Table ${order.table}` : "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {order.itemCount || order.items.length}
+                          {Array.isArray(order.items) ? order.items.length : order.itemCount ?? 0}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {order.total}
+                          {order.total ? (typeof order.total === "number" ? `Rp ${order.total.toLocaleString("id-ID")}` : order.total) : (order.totalAmount ? `Rp ${Number(order.totalAmount).toLocaleString("id-ID")}` : "-")}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           <span
                             className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                               order.status === "served"
                                 ? "bg-green-100 text-green-800"
-                                : order.status === "in-progress"
+                                : order.status === "in-process" || order.status === "in_progress"
                                 ? "bg-yellow-100 text-yellow-800"
                                 : order.status === "pending-payment"
                                 ? "bg-purple-100 text-purple-800"
@@ -376,16 +306,16 @@ export default function WaiterDashboard() {
                             }`}
                           >
                             {order.status
-                              .split("-")
-                              .map(
-                                (word) =>
-                                  word.charAt(0).toUpperCase() + word.slice(1)
-                              )
-                              .join(" ")}
+                              ? order.status
+                                  .toString()
+                                  .split("-")
+                                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+                                  .join(" ")
+                              : "-"}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {order.time}
+                          {order.time || order.createdAt ? (order.time || new Date(order.createdAt).toLocaleTimeString("id-ID", { hour: "2-digit", minute: "2-digit" })) : "-"}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                           <div className="flex justify-end items-center space-x-2">
@@ -395,13 +325,10 @@ export default function WaiterDashboard() {
                             >
                               View
                             </button>
-
                             <OrderActionsMenu
                               order={order}
                               onView={() => handleViewOrder(order)}
-                              onMarkAsServed={() =>
-                                handleMarkAsServed(order.id)
-                              }
+                              onMarkAsServed={() => handleMarkAsServed(order.id)}
                               onAddItems={() => handleAddItems(order)}
                             />
                           </div>
@@ -413,7 +340,8 @@ export default function WaiterDashboard() {
               </div>
             )}
           </div>
-        </div>        {/* Tables Overview */}
+        </div>
+        {/* Tables Overview */}
         <div className="mt-8 bg-white shadow-md rounded-xl overflow-hidden">
           <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
             <h3 className="text-lg leading-6 font-medium text-gray-900">
@@ -428,7 +356,8 @@ export default function WaiterDashboard() {
                   .map((_, index) => (
                     <div key={index} className="h-20 bg-gray-200 rounded-xl"></div>
                   ))}
-              </div>            ) : tables.length > 0 ? (
+              </div>
+            ) : tables.length > 0 ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
                 {tables.map((table) => (
                   <div
