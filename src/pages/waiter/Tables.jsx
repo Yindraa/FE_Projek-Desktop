@@ -96,22 +96,23 @@ export default function Tables() {
     setSelectedTable(
       updatedTables.find((table) => table.id === selectedTable.id)
     );
-  };
-  const handleCreateOrder = (newOrder) => {
-    // In a real app, you would call an API to create the order
-    const orderId = `ORD-${Math.floor(Math.random() * 1000)
-      .toString()
-      .padStart(3, "0")}`;
+  };  const handleCreateOrder = (apiResponse) => {
+    // Handle API response format from /waiter/order endpoint
     const time = new Date().toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
 
+    // Format order data to match frontend expectations
     const formattedOrder = {
-      id: orderId,
-      items: newOrder.items.length,
-      total: waiterService.formatPrice(newOrder.total),
-      status: "pending",
+      id: apiResponse.id,
+      items: apiResponse.orderItems ? apiResponse.orderItems.length : 0,
+      total: waiterService.formatPrice(
+        typeof apiResponse.totalAmount === 'string' 
+          ? parseFloat(apiResponse.totalAmount) 
+          : apiResponse.totalAmount
+      ),
+      status: apiResponse.status ? apiResponse.status.toLowerCase() : "pending",
       time: time,
     };
 

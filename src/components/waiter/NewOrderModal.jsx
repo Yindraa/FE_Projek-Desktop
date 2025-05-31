@@ -9,6 +9,7 @@ import {
   TrashIcon,
 } from "@heroicons/react/24/outline";
 import { waiterService } from "../../services/waiterService";
+import { useNotification } from "../../contexts/NotificationContext";
 
 export default function NewOrderModal({
   isOpen,
@@ -16,6 +17,7 @@ export default function NewOrderModal({
   tableId,
   onCreateOrder,
 }) {
+  const { showSuccess, showError } = useNotification();
   const [orderItems, setOrderItems] = useState([]);
   const [menuItems, setMenuItems] = useState([]);
   const [menuByCategory, setMenuByCategory] = useState({});
@@ -153,28 +155,49 @@ export default function NewOrderModal({
       (total, item) => total + item.price * item.quantity,
       0
     );
-  };
-
-  const handleCreateOrder = () => {
+  };  const handleCreateOrder = async () => {
     if (orderItems.length === 0) {
-      alert("Please add at least one item to the order");
+      showError("Please add at least one item to the order");
       return;
     }
 
-    const newOrder = {
-      tableId: selectedTableId,
-      items: orderItems,
-      customerCount,
-      total: calculateTotal(),
-      status: "pending",
-      createdAt: new Date().toISOString(),
-    };
+    try {
+      // Find the selected table to get its database ID
+      const selectedTable = availableTables.find(table => table.tableNumber === selectedTableId);
+      if (!selectedTable) {
+        showError("Selected table not found. Please refresh and try again.");
+        return;
+      }
 
-    onCreateOrder(newOrder);
-    // Reset form
-    setOrderItems([]);
-    setCustomerCount(1);
-    onClose();
+      // Format order data according to API specification
+      const orderData = {
+        tableId: selectedTable.id, // Use database ID, not table number
+        items: orderItems.map(item => ({
+          menuItemId: item.menuItemId, // Use menuItemId as expected by API
+          quantity: item.quantity,
+          notes: item.notes || '' // Include notes if any
+        }))
+      };
+
+      // Create order via API
+      const createdOrder = await waiterService.createOrder(orderData);
+      
+      // Call parent callback with the created order
+      onCreateOrder(createdOrder);
+      
+      // Reset form
+      setOrderItems([]);
+      setCustomerCount(1);
+      onClose();
+        // Show success message
+      showSuccess(`Order created successfully! Order ID: ${createdOrder.id}`);
+        } catch (error) {
+      console.error('Failed to create order:', error);
+      console.log('Available tables when error occurred:', availableTables);
+      console.log('Selected table ID when error occurred:', selectedTableId);
+      console.log('Order items when error occurred:', orderItems);
+      showError(`Failed to create order: ${error.message}`);
+    }
   };
 
   return (

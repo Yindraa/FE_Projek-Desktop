@@ -91,18 +91,38 @@ export const waiterService = {
   },
 
   // ===== ORDER SERVICES =====
-  
-  /**
+    /**
    * Create a new order
    * @param {Object} orderData - Order information
+   * @param {string} orderData.tableId - Table database ID (not table number)
+   * @param {Array} orderData.items - Array of order items
+   * @param {string} orderData.items[].menuItemId - Menu item database ID
+   * @param {number} orderData.items[].quantity - Quantity of the item
+   * @param {string} [orderData.items[].notes] - Optional notes for the item
    * @returns {Promise<Object>} Created order
    */
   createOrder: async (orderData) => {
     try {
-      const response = await waiterAPI.post('/orders', orderData);
+      // Format request body according to API specification
+      const requestBody = {
+        tableId: orderData.tableId, // Table database ID
+        items: orderData.items.map(item => ({
+          menuItemId: item.menuItemId,
+          quantity: item.quantity,
+          notes: item.notes || '' // Optional notes
+        }))
+      };
+
+      const response = await waiterAPI.post('/waiter/order', requestBody);
       return response.data;
     } catch (error) {
       console.error('Failed to create order:', error);
+      
+      // Handle specific API errors
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      }
+      
       throw new Error('Failed to create order. Please try again.');
     }
   },
