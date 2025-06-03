@@ -11,6 +11,7 @@ import {
   BanknotesIcon,
   ArrowPathIcon,
 } from "@heroicons/react/24/outline";
+import waiterService from "../../services/waiterService";
 
 export default function Payments() {
   const [pendingPayments, setPendingPayments] = useState([]);
@@ -36,116 +37,105 @@ export default function Payments() {
   const transactionDetailsRef = useRef({});
 
   useEffect(() => {
-    // Simulate API call with mock data
+    // Load pending payments and recent transactions from API
     const loadPaymentData = async () => {
       setIsLoading(true);
-
-      // Simulate API delay
-      setTimeout(() => {
-        // Mock pending payments data
-        setPendingPayments([
-          {
-            id: "ORD-003",
-            table: 8,
-            customer: "Sarah Johnson",
-            items: [
-              { name: "Spaghetti Carbonara", quantity: 1, price: 16.99 },
-              { name: "Tiramisu", quantity: 1, price: 7.99 },
-            ],
-            subtotal: 24.98,
-            tax: 2.5,
-            total: 27.48,
-            time: "10:40 AM",
-          },
-          {
-            id: "ORD-005",
-            table: 12,
-            customer: "Michael Brown",
-            items: [
-              { name: "Steak", quantity: 1, price: 24.99 },
-              { name: "Mashed Potatoes", quantity: 1, price: 5.99 },
-              { name: "Red Wine", quantity: 1, price: 8.99 },
-            ],
-            subtotal: 39.97,
-            tax: 4.0,
-            total: 43.97,
-            time: "11:05 AM",
-          },
-        ]);
-
-        // Mock recent transactions data with more details
-        setRecentTransactions([
-          {
-            id: "TRX-001",
-            orderId: "ORD-001",
-            table: 5,
-            customer: "Walk-in Customer",
-            amount: 52.96,
-            method: "credit",
-            status: "completed",
-            time: "10:25 AM",
-            date: "2023-05-14",
-            items: [
-              { name: "Grilled Salmon", quantity: 2, price: 18.99 },
-              { name: "Caesar Salad", quantity: 1, price: 8.99 },
-              { name: "Iced Tea", quantity: 2, price: 2.99 },
-            ],
-            subtotal: 48.96,
-            tax: 4.0,
-            total: 52.96,
-          },
-          {
-            id: "TRX-002",
-            orderId: "ORD-004",
-            table: 1,
-            customer: "John Doe",
-            amount: 23.96,
-            method: "cash",
-            status: "completed",
-            time: "10:55 AM",
-            date: "2023-05-14",
-            items: [
-              { name: "Beef Burger", quantity: 1, price: 12.99 },
-              { name: "French Fries", quantity: 1, price: 4.99 },
-              { name: "Soda", quantity: 2, price: 2.99 },
-            ],
-            subtotal: 21.97,
-            tax: 1.99,
-            total: 23.96,
-          },
-          {
-            id: "TRX-003",
-            orderId: "ORD-002",
-            table: 3,
-            customer: "Jane Smith",
-            amount: 40.97,
-            method: "qr",
-            status: "completed",
-            time: "11:10 AM",
-            date: "2023-05-14",
-            items: [
-              { name: "Margherita Pizza", quantity: 1, price: 14.99 },
-              { name: "Chicken Wings", quantity: 2, price: 12.99 },
-            ],
-            subtotal: 37.97,
-            tax: 3.0,
-            total: 40.97,
-          },
-        ]);
-
+      try {
+        const pending = await waiterService.getPendingPayments();
+        setPendingPayments(
+          pending.map((order) => ({
+            ...order,
+            subtotal: order.total * 0.9, // Assume 10% tax
+            tax: order.total * 0.1,
+            total: order.total,
+            time:
+              order.time ||
+              (order.orderTime
+                ? new Date(order.orderTime).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })
+                : "-"),
+          }))
+        );
+        // Load recent transactions from API
+        const recent = await waiterService.getRecentOrders();
+        setRecentTransactions(
+          recent.map((order) => ({
+            id: order.id,
+            orderId: order.id,
+            table: order.table,
+            customer: order.customer,
+            amount: order.total,
+            method: order.paymentOption
+              ? order.paymentOption.toLowerCase() === "card"
+                ? "credit"
+                : order.paymentOption.toLowerCase() === "qris"
+                ? "qr"
+                : order.paymentOption.toLowerCase()
+              : "cash",
+            status: order.status,
+            time: order.paymentTime
+              ? new Date(order.paymentTime).toLocaleTimeString([], {
+                  hour: "2-digit",
+                  minute: "2-digit",
+                })
+              : order.time ||
+                (order.orderTime
+                  ? new Date(order.orderTime).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
+                  : "-"),
+            date: order.paymentTime
+              ? new Date(order.paymentTime).toLocaleDateString()
+              : order.orderTime
+              ? new Date(order.orderTime).toLocaleDateString()
+              : "-",
+            items: order.items,
+            subtotal: order.total * 0.9,
+            tax: order.total * 0.1,
+            total: order.total,
+            cashReceived: null,
+            change: null,
+          }))
+        );
         setIsLoading(false);
-      }, 1000);
+      } catch (err) {
+        setPendingPayments([]);
+        setRecentTransactions([]);
+        setIsLoading(false);
+      }
     };
-
     loadPaymentData();
   }, []);
 
-  const handlePaymentSelect = (payment) => {
-    setSelectedPayment(payment);
-    setPaymentMethod("cash"); // Reset payment method when selecting a new payment
-    setShowQrCode(false);
-    setShowCardForm(false);
-    setCashAmount(payment.total.toFixed(2)); // Set default cash amount to the total
+  const handlePaymentSelect = async (payment) => {
+    setIsLoading(true);
+    try {
+      const detail = await waiterService.getPendingPaymentDetail(payment.id);
+      setSelectedPayment({
+        ...detail,
+        subtotal: detail.total * 0.9,
+        tax: detail.total * 0.1,
+        total: detail.total,
+        time:
+          detail.time ||
+          (detail.orderTime
+            ? new Date(detail.orderTime).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "-"),
+      });
+      setPaymentMethod("cash");
+      setShowQrCode(false);
+      setShowCardForm(false);
+      setIsLoading(false);
+    } catch (err) {
+      setSelectedPayment(null);
+      setIsLoading(false);
+    }
   };
 
   const handlePaymentMethodChange = (method) => {
@@ -169,12 +159,10 @@ export default function Payments() {
   const calculateChange = () => {
     if (!selectedPayment || !cashAmount) return 0;
     const cashValue = Number.parseFloat(cashAmount);
-    return cashValue > selectedPayment.total
-      ? cashValue - selectedPayment.total
-      : 0;
+    return cashValue > selectedPayment.total ? cashValue - selectedPayment.total : 0;
   };
 
-  const handleProcessPayment = () => {
+  const handleProcessPayment = async () => {
     if (!selectedPayment) return;
 
     // Validate payment method inputs
@@ -210,16 +198,21 @@ export default function Payments() {
     }
 
     setIsProcessing(true);
-
-    // Simulate payment processing
-    setTimeout(() => {
-      // Create transaction details
+    try {
+      let paymentOption = "CASH";
+      if (paymentMethod === "credit") paymentOption = "CARD";
+      if (paymentMethod === "qr") paymentOption = "QRIS";
+      const updatedOrder = await waiterService.completePayment(
+        selectedPayment.id,
+        paymentOption
+      );
+      // Add to recent transactions (simulate receipt)
       const newTransaction = {
         id: `TRX-${Math.floor(Math.random() * 1000)}`,
-        orderId: selectedPayment.id,
-        table: selectedPayment.table,
-        customer: selectedPayment.customer,
-        amount: selectedPayment.total,
+        orderId: updatedOrder.id,
+        table: updatedOrder.table,
+        customer: updatedOrder.customer,
+        amount: updatedOrder.total,
         method: paymentMethod,
         status: "completed",
         time: new Date().toLocaleTimeString([], {
@@ -227,46 +220,30 @@ export default function Payments() {
           minute: "2-digit",
         }),
         date: new Date().toLocaleDateString(),
-        items: selectedPayment.items,
-        subtotal: selectedPayment.subtotal,
-        tax: selectedPayment.tax,
-        total: selectedPayment.total,
+        items: updatedOrder.items,
+        subtotal: updatedOrder.total * 0.9,
+        tax: updatedOrder.total * 0.1,
+        total: updatedOrder.total,
         cashReceived:
           paymentMethod === "cash" ? Number.parseFloat(cashAmount) : null,
         change: paymentMethod === "cash" ? calculateChange() : null,
       };
-
-      // Store transaction details for receipt
-      transactionDetailsRef.current = newTransaction;
-
-      // Add to recent transactions
       setRecentTransactions((prev) => [newTransaction, ...prev]);
-
-      // Remove from pending payments
-      setPendingPayments((prev) =>
-        prev.filter((p) => p.id !== selectedPayment.id)
-      );
-
-      // Show success message or receipt
+      setPendingPayments((prev) => prev.filter((p) => p.id !== updatedOrder.id));
       if (paymentMethod === "cash" || paymentMethod === "credit") {
-        // Open receipt modal automatically for cash and card payments
         setSelectedTransaction(newTransaction);
         setIsReceiptModalOpen(true);
       }
-
-      // Reset form
       setSelectedPayment(null);
       setShowQrCode(false);
       setShowCardForm(false);
-      setCardDetails({
-        cardNumber: "",
-        cardHolder: "",
-        expiryDate: "",
-        cvv: "",
-      });
+      setCardDetails({ cardNumber: "", cardHolder: "", expiryDate: "", cvv: "" });
       setCashAmount("");
       setIsProcessing(false);
-    }, 1500);
+    } catch (err) {
+      alert(err.message || "Failed to complete payment");
+      setIsProcessing(false);
+    }
   };
 
   const handlePrintReceipt = (transaction) => {
@@ -316,7 +293,6 @@ export default function Payments() {
     <DashboardLayout role="waiter">
       <div className="p-6">
         <h1 className="text-2xl font-semibold text-gray-900 mb-6">Payments</h1>
-
         {/* Search */}
         <div className="bg-white shadow-md rounded-xl mb-6 p-4">
           <div className="relative">
@@ -332,14 +308,11 @@ export default function Payments() {
             />
           </div>
         </div>
-
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Pending Payments */}
           <div className="bg-white shadow-md rounded-xl overflow-hidden">
             <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-              <h3 className="text-lg leading-6 font-medium text-gray-900">
-                Pending Payments
-              </h3>
+              <h3 className="text-lg leading-6 font-medium text-gray-900">Pending Payments</h3>
             </div>
             <div className="px-4 py-3 sm:px-6">
               {isLoading ? (
@@ -347,10 +320,7 @@ export default function Payments() {
                   {Array(2)
                     .fill(0)
                     .map((_, index) => (
-                      <div
-                        key={index}
-                        className="h-24 bg-gray-200 rounded mb-4"
-                      ></div>
+                      <div key={index} className="h-24 bg-gray-200 rounded mb-4"></div>
                     ))}
                 </div>
               ) : filteredPendingPayments.length > 0 ? (
@@ -358,64 +328,44 @@ export default function Payments() {
                   {filteredPendingPayments.map((payment) => (
                     <div
                       key={payment.id}
-                      className={`border rounded-xl overflow-hidden cursor-pointer transition-colors ${
-                        selectedPayment?.id === payment.id
-                          ? "border-amber-500 bg-amber-50"
-                          : "border-gray-200 hover:bg-gray-50"
-                      }`}
+                      className={`border rounded-xl overflow-hidden cursor-pointer transition-colors ${selectedPayment?.id === payment.id ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:bg-gray-50"}`}
                       onClick={() => handlePaymentSelect(payment)}
                     >
                       <div className="px-4 py-3 border-b border-gray-200">
                         <div className="flex justify-between items-center">
-                          <h4 className="text-md font-medium text-gray-900">
-                            {payment.id} - Table {payment.table}
-                          </h4>
-                          <span className="text-sm text-gray-500">
-                            {payment.time}
-                          </span>
+                          <h4 className="text-md font-medium text-gray-900">{payment.id} - Table {payment.table}</h4>
+                          <span className="text-sm text-gray-500">{payment.time}</span>
                         </div>
-                        <p className="text-sm text-gray-500">
-                          Customer: {payment.customer}
-                        </p>
+                        <p className="text-sm text-gray-500">Customer: {payment.customer}</p>
                       </div>
                       <div className="px-4 py-3">
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-500">Subtotal:</span>
-                          <span className="text-gray-900">
-                            ${payment.subtotal.toFixed(2)}
-                          </span>
+                          <span className="text-gray-900">{waiterService.formatPrice(payment.subtotal)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-500">Tax:</span>
-                          <span className="text-gray-900">
-                            ${payment.tax.toFixed(2)}
-                          </span>
+                          <span className="text-gray-900">{waiterService.formatPrice(payment.tax)}</span>
                         </div>
                         <div className="flex justify-between font-medium mt-2">
                           <span className="text-gray-900">Total:</span>
-                          <span className="text-gray-900">
-                            ${payment.total.toFixed(2)}
-                          </span>
+                          <span className="text-gray-900">{waiterService.formatPrice(payment.total)}</span>
                         </div>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-6 text-gray-500">
-                  No pending payments found.
-                </div>
+                <div className="text-center py-6 text-gray-500">No pending payments found.</div>
               )}
             </div>
-          </div>
-
+          </div> {/* <<<<<<<<<<<<<<<<<<<< THIS IS THE CORRECTED CLOSING DIV for "Pending Payments" section */}
+          
           {/* Payment Processing or Recent Transactions */}
           {selectedPayment ? (
             <div className="bg-white shadow-md rounded-xl overflow-hidden">
               <div className="px-4 py-5 sm:px-6 border-b border-gray-200">
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Process Payment
-                </h3>
+                <h3 className="text-lg leading-6 font-medium text-gray-900">Process Payment</h3>
                 <p className="mt-1 max-w-2xl text-sm text-gray-500">
                   Order {selectedPayment.id} - Table {selectedPayment.table}
                 </p>
@@ -423,9 +373,7 @@ export default function Payments() {
               <div className="px-4 py-5 sm:px-6">
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">
-                      Order Summary
-                    </h4>
+                    <h4 className="text-sm font-medium text-gray-500">Order Summary</h4>
                     <div className="mt-2 border rounded-xl overflow-hidden">
                       <table className="min-w-full divide-y divide-gray-200">
                         <thead className="bg-gray-50">
@@ -460,7 +408,7 @@ export default function Payments() {
                                 {item.quantity}
                               </td>
                               <td className="px-4 py-2 whitespace-nowrap text-sm text-gray-900 text-right">
-                                ${item.price.toFixed(2)}
+                                {waiterService.formatPrice(item.price)}
                               </td>
                             </tr>
                           ))}
@@ -474,7 +422,7 @@ export default function Payments() {
                               Subtotal
                             </td>
                             <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
-                              ${selectedPayment.subtotal.toFixed(2)}
+                              {waiterService.formatPrice(selectedPayment.subtotal)}
                             </td>
                           </tr>
                           <tr>
@@ -485,7 +433,7 @@ export default function Payments() {
                               Tax
                             </td>
                             <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
-                              ${selectedPayment.tax.toFixed(2)}
+                              {waiterService.formatPrice(selectedPayment.tax)}
                             </td>
                           </tr>
                           <tr>
@@ -496,7 +444,7 @@ export default function Payments() {
                               Total
                             </td>
                             <td className="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900 text-right">
-                              ${selectedPayment.total.toFixed(2)}
+                              {waiterService.formatPrice(selectedPayment.total)}
                             </td>
                           </tr>
                         </tfoot>
@@ -505,16 +453,10 @@ export default function Payments() {
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-medium text-gray-500">
-                      Payment Method
-                    </h4>
+                    <h4 className="text-sm font-medium text-gray-500">Payment Method</h4>
                     <div className="mt-2 grid grid-cols-3 gap-3">
                       <div
-                        className={`border rounded-xl p-3 flex flex-col items-center cursor-pointer ${
-                          paymentMethod === "cash"
-                            ? "border-amber-500 bg-amber-50"
-                            : "border-gray-200 hover:bg-gray-50"
-                        }`}
+                        className={`border rounded-xl p-3 flex flex-col items-center cursor-pointer ${paymentMethod === "cash" ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:bg-gray-50"}`}
                         onClick={() => handlePaymentMethodChange("cash")}
                       >
                         <BanknotesIcon className="h-6 w-6 text-gray-400" />
@@ -523,11 +465,7 @@ export default function Payments() {
                         </span>
                       </div>
                       <div
-                        className={`border rounded-xl p-3 flex flex-col items-center cursor-pointer ${
-                          paymentMethod === "credit"
-                            ? "border-amber-500 bg-amber-50"
-                            : "border-gray-200 hover:bg-gray-50"
-                        }`}
+                        className={`border rounded-xl p-3 flex flex-col items-center cursor-pointer ${paymentMethod === "credit" ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:bg-gray-50"}`}
                         onClick={() => handlePaymentMethodChange("credit")}
                       >
                         <CreditCardIcon className="h-6 w-6 text-gray-400" />
@@ -536,11 +474,7 @@ export default function Payments() {
                         </span>
                       </div>
                       <div
-                        className={`border rounded-xl p-3 flex flex-col items-center cursor-pointer ${
-                          paymentMethod === "qr"
-                            ? "border-amber-500 bg-amber-50"
-                            : "border-gray-200 hover:bg-gray-50"
-                        }`}
+                        className={`border rounded-xl p-3 flex flex-col items-center cursor-pointer ${paymentMethod === "qr" ? "border-amber-500 bg-amber-50" : "border-gray-200 hover:bg-gray-50"}`}
                         onClick={() => handlePaymentMethodChange("qr")}
                       >
                         <QrCodeIcon className="h-6 w-6 text-gray-400" />
@@ -563,7 +497,7 @@ export default function Payments() {
                         </label>
                         <div className="mt-1 relative rounded-md shadow-sm">
                           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span className="text-gray-500 sm:text-sm">$</span>
+                            <span className="text-gray-500 sm:text-sm">$</span> {/* Consider making currency dynamic or based on locale */}
                           </div>
                           <input
                             type="number"
@@ -584,7 +518,7 @@ export default function Payments() {
                           Change:
                         </span>
                         <span className="font-medium text-green-600">
-                          ${calculateChange().toFixed(2)}
+                          {waiterService.formatPrice(calculateChange())}
                         </span>
                       </div>
                     </div>
@@ -656,14 +590,20 @@ export default function Payments() {
                               maxLength="5"
                               value={cardDetails.expiryDate}
                               onChange={(e) => {
-                                let value = e.target.value;
-                                // Format as MM/YY
-                                if (
-                                  value.length === 2 &&
-                                  cardDetails.expiryDate.length === 1
-                                ) {
+                                let value = e.target.value.replace(/[^0-9/]/g, ""); // Allow only numbers and slash
+                                // Add slash automatically
+                                if (value.length === 2 && cardDetails.expiryDate.length === 1 && value.indexOf('/') === -1) {
                                   value += "/";
+                                } else if (value.length === 2 && e.nativeEvent.inputType === 'deleteContentBackward' && cardDetails.expiryDate.length === 3) {
+                                  // Handle backspace when slash is present
+                                  value = value.slice(0,1);
+                                } else if (value.length > 2 && value.indexOf('/') === -1) {
+                                    // if user types more than 2 digits without slash, add it
+                                    value = value.slice(0,2) + "/" + value.slice(2);
                                 }
+                                // Prevent typing more than MM/YY
+                                if (value.length > 5) value = value.slice(0,5);
+
                                 setCardDetails({
                                   ...cardDetails,
                                   expiryDate: value,
@@ -725,12 +665,12 @@ export default function Payments() {
                                       ? "bg-black"
                                       : "bg-white"
                                   } ${
-                                    i < 5 ||
-                                    i > 19 ||
-                                    i % 5 === 0 ||
-                                    i % 5 === 4
-                                      ? "bg-black"
-                                      : ""
+                                    i < 5 || // Top border squares
+                                    i > 19 || // Bottom border squares
+                                    i % 5 === 0 || // Left border squares
+                                    i % 5 === 4 // Right border squares
+                                      ? Math.random() > 0.2 ? "bg-black" : "bg-gray-700" // Make border squares more consistently dark
+                                      : "" // Inner squares
                                   }`}
                                 ></div>
                               ))}
@@ -738,17 +678,17 @@ export default function Payments() {
                         </div>
                       </div>
                       <p className="text-sm text-gray-700 font-medium">
-                        Scan to pay ${selectedPayment.total.toFixed(2)}
+                        Scan to pay {waiterService.formatPrice(selectedPayment.total)}
                       </p>
                       <p className="text-xs text-gray-500 mt-1">
                         Payment ID: {selectedPayment.id}
                       </p>
                       <button
                         className="mt-4 inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
-                        onClick={() => setShowQrCode(false)}
+                        onClick={() => setShowQrCode(false)} // This should probably refresh or re-validate
                       >
                         <ArrowPathIcon className="-ml-0.5 mr-2 h-4 w-4" />
-                        Refresh QR Code
+                        Refresh QR Code {/* Or "Verify Payment" if QR triggers an external check */}
                       </button>
                     </div>
                   )}
@@ -869,7 +809,7 @@ export default function Payments() {
                               {transaction.orderId} (Table {transaction.table})
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                              ${transaction.amount.toFixed(2)}
+                              {waiterService.formatPrice(transaction.amount)}
                             </td>
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               <span
@@ -915,7 +855,6 @@ export default function Payments() {
           )}
         </div>
       </div>
-
       {/* Receipt Modal */}
       <ReceiptModal
         isOpen={isReceiptModalOpen}

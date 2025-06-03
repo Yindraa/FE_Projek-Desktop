@@ -43,8 +43,16 @@ export default function Orders() {
   }, []);
 
   const filteredOrders = orders.filter((order) => {
-    // Filter by status
-    if (activeTab !== "all" && order.status !== activeTab) {
+    // Exclude completed orders from 'all' tab
+    if (activeTab === "all" && order.status === "completed") {
+      return false;
+    }
+    // Only show completed orders in 'completed' tab
+    if (activeTab === "completed" && order.status !== "completed") {
+      return false;
+    }
+    // Filter by status for other tabs
+    if (activeTab !== "all" && activeTab !== "completed" && order.status !== activeTab) {
       return false;
     }
 
@@ -170,11 +178,12 @@ export default function Orders() {
                       "in-progress",
                       "served",
                       "pending-payment",
+                      "completed", 
                     ].map((tab) => (
                       <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`${
+                        className={`$${
                           activeTab === tab
                             ? "border-amber-500 text-amber-600"
                             : "border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
@@ -223,6 +232,7 @@ export default function Orders() {
               <option value="in-progress">In Progress</option>
               <option value="served">Served</option>
               <option value="pending-payment">Pending Payment</option>
+              <option value="completed">Completed</option>
             </select>
           </div>
         </div>

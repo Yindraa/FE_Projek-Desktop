@@ -3,12 +3,14 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import PageTitle from "../../components/common/PageTitle";
-import { getOrdersForChef } from "../../services/chefService";
+import { updateOrderStatusChef, getOrdersForChef } from "../../services/chefService";
+import { useNotification } from "../../contexts/NotificationContext";
 
 export default function OrdersQueue() {
   const [orders, setOrders] = useState([]);
   const [activeTab, setActiveTab] = useState("In Queue");
   const [isLoading, setIsLoading] = useState(true);
+  const { showError } = useNotification();
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -64,42 +66,53 @@ export default function OrdersQueue() {
     return order.items.some((item) => item.status === activeTab);
   });
 
-  const handleItemStatusChange = (orderId, itemName, newStatus) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) => {
-        if (order.id === orderId) {
-          const updatedItems = order.items.map((item) => {
-            if (item.name === itemName) {
-              return { ...item, status: newStatus };
-            }
-            return item;
-          });
+  // Handler untuk update status order chef
+  const handleItemStatusChange = async (orderId, itemName, newStatus) => {
+    // Map FE status ke BE status
+    let backendStatus = null;
+    if (newStatus === "in-process") backendStatus = "IN_PROCESS";
+    if (newStatus === "Ready") backendStatus = "READY";
+    if (!backendStatus) return;
 
-          // Only update the order status if ALL items have the same status
-          const allReady = updatedItems.every(
-            (item) => item.status === "Ready"
-          );
-          const allInProcess = updatedItems.every(
-            (item) =>
-              item.status === "in-process" || item.status === "Ready"
-          );
-
-          let orderStatus = order.status;
-          if (allReady) {
-            orderStatus = "Ready";
-          } else if (allInProcess && !allReady) {
-            orderStatus = "in-process";
-          }
-
-          return {
-            ...order,
-            items: updatedItems,
-            status: orderStatus,
-          };
-        }
-        return order;
-      })
-    );
+    try {
+      const updatedOrder = await updateOrderStatusChef(orderId, backendStatus);
+      // Map API response ke FE format
+      setOrders((prevOrders) =>
+        prevOrders.map((order) =>
+          order.id === updatedOrder.id
+            ? {
+                ...order,
+                status:
+                  updatedOrder.status === "IN_QUEUE"
+                    ? "In Queue"
+                    : updatedOrder.status === "IN_PROCESS"
+                    ? "in-process"
+                    : updatedOrder.status === "READY"
+                    ? "Ready"
+                    : updatedOrder.status,
+                items: updatedOrder.orderItems.map((item) => ({
+                  name: item.menuItem?.name || "-",
+                  quantity: item.quantity,
+                  status:
+                    updatedOrder.status === "IN_QUEUE"
+                      ? "In Queue"
+                      : updatedOrder.status === "IN_PROCESS"
+                      ? "in-process"
+                      : updatedOrder.status === "READY"
+                      ? "Ready"
+                      : updatedOrder.status,
+                  notes: item.notes || "",
+                })),
+              }
+            : order
+        )
+      );
+    } catch (err) {
+      showError(
+        "Gagal update status order",
+        err?.response?.data?.message || err?.message || "Terjadi kesalahan saat update status order."
+      );
+    }
   };
 
   return (

@@ -262,6 +262,17 @@ export const waiterService = {
     }
   },
 
+  getRecentOrders: async () => {
+    try {
+      const response = await waiterAPI.get('/waiter/orders/recent');
+      // Map API response to FE format
+      return Array.isArray(response.data) ? response.data.map(mapOrderFromApi) : [];
+    } catch (error) {
+      console.error('Failed to fetch recent orders:', error);
+      throw new Error('Failed to load recent orders. Please try again.');
+    }
+  },
+
   // ===== TABLE SERVICES =====
   
   /**
@@ -338,6 +349,45 @@ export const waiterService = {
     } catch (error) {
       console.error('Failed to process payment:', error);
       throw new Error('Failed to process payment. Please try again.');
+    }
+  },
+
+  // ===== PAYMENT SERVICES =====** //
+  getPendingPayments: async () => {
+    try {
+      const response = await waiterAPI.get('/waiter/orders/pending-payments');
+      // Map API response to FE format
+      return Array.isArray(response.data) ? response.data.map(mapOrderFromApi) : [];
+    } catch (error) {
+      console.error('Failed to fetch pending payments:', error);
+      throw new Error('Failed to load pending payments. Please try again.');
+    }
+  },
+
+  getPendingPaymentDetail: async (orderId) => {
+    try {
+      const response = await waiterAPI.get(`/waiter/order/${orderId}/pending-payment`);
+      return mapOrderFromApi(response.data);
+    } catch (error) {
+      console.error('Failed to fetch pending payment detail:', error);
+      throw new Error(
+        error.response?.data?.message || 'Failed to load pending payment detail.'
+      );
+    }
+  },
+
+  completePayment: async (orderId, paymentOption) => {
+    try {
+      const response = await waiterAPI.patch(
+        `/waiter/order/${orderId}/complete-payment`,
+        { paymentOption }
+      );
+      return mapOrderFromApi(response.data);
+    } catch (error) {
+      console.error('Failed to complete payment:', error);
+      throw new Error(
+        error.response?.data?.message || 'Failed to complete payment. Please try again.'
+      );
     }
   },
 
