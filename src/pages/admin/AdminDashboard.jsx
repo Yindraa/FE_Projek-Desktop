@@ -11,56 +11,8 @@ import {
   ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
-
-// Mock data for dashboard stats
-const mockStats = [
-  {
-    name: "Total Revenue",
-    stat: "$24,000",
-    icon: () => {
-      return <CurrencyDollarIcon className="h-6 w-6" aria-hidden="true" />;
-    },
-    change: "+4.75%",
-    changeType: "increase",
-  },
-  {
-    name: "Total Orders",
-    stat: "450",
-    icon: () => {
-      return (
-        <ClipboardDocumentListIcon className="h-6 w-6" aria-hidden="true" />
-      );
-    },
-    change: "+10.15%",
-    changeType: "increase",
-  },
-  {
-    name: "Active Tables",
-    stat: "12/20",
-    icon: () => {
-      return <QueueListIcon className="h-6 w-6" aria-hidden="true" />;
-    },
-    change: "70%",
-    changeType: "neutral",
-  },
-  {
-    name: "Staff Members",
-    stat: "15",
-    icon: () => {
-      return <UsersIcon className="h-6 w-6" aria-hidden="true" />;
-    },
-    change: "+2",
-    changeType: "increase",
-  },
-];
-
-// Mock data for recent orders
-const mockRecentOrders = [
-  { id: "ORD-001", table: "Table 5", amount: "$45.80", status: "Completed" },
-  { id: "ORD-002", table: "Table 3", amount: "$32.50", status: "In Progress" },
-  { id: "ORD-003", table: "Table 8", amount: "$78.25", status: "Completed" },
-  { id: "ORD-004", table: "Table 1", amount: "$24.00", status: "Pending" },
-];
+import { CurrencyDollarIcon, UsersIcon } from "@heroicons/react/24/outline";
+import { fetchDashboardStats } from "../../services/adminService";
 
 // Mock data for popular items
 const mockPopularItems = [
@@ -70,8 +22,6 @@ const mockPopularItems = [
   { name: "Margherita Pizza", category: "Main Course", orders: 30 },
   { name: "Iced Coffee", category: "Beverage", orders: 28 },
 ];
-
-import { CurrencyDollarIcon, UsersIcon } from "@heroicons/react/24/outline";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState([]);
@@ -84,13 +34,56 @@ export default function AdminDashboard() {
     const loadDashboardData = async () => {
       try {
         setIsLoading(true);
-
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Use mock data directly
-        setStats(mockStats);
-        setRecentOrders(mockRecentOrders);
+        // Fetch from real API
+        const data = await fetchDashboardStats();
+        setStats([
+          {
+            name: "Total Revenue",
+            stat: `$${data.totalRevenue.toLocaleString()}`,
+            icon: () => (
+              <CurrencyDollarIcon className="h-6 w-6" aria-hidden="true" />
+            ),
+            change: "", // You can add logic for change if available
+            changeType: "neutral",
+          },
+          {
+            name: "Total Orders",
+            stat: data.totalOrders.toLocaleString(),
+            icon: () => (
+              <ClipboardDocumentListIcon className="h-6 w-6" aria-hidden="true" />
+            ),
+            change: "",
+            changeType: "neutral",
+          },
+          {
+            name: "Active Tables",
+            stat: `${data.activeTables}/${data.totalTables}`,
+            icon: () => (
+              <QueueListIcon className="h-6 w-6" aria-hidden="true" />
+            ),
+            change: "",
+            changeType: "neutral",
+          },
+          {
+            name: "Staff Members",
+            stat: data.staffMembers.toString(),
+            icon: () => <UsersIcon className="h-6 w-6" aria-hidden="true" />,
+            change: "",
+            changeType: "neutral",
+          },
+        ]);
+        setRecentOrders(
+          (data.recentOrders || []).map((order) => ({
+            id: order.id,
+            table: `Table ${order.table?.tableNumber ?? "-"}`,
+            amount: `$${order.totalAmount?.toFixed(2) ?? "0.00"}`,
+            status:
+              order.status === "COMPLETED"
+                ? "Completed"
+                : order.status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+          }))
+        );
+        // Keep using mockPopularItems for now
         setPopularItems(mockPopularItems);
         setError(null);
       } catch (err) {

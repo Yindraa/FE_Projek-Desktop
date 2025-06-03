@@ -50,7 +50,7 @@ function handleApiError(error, defaultMessage = "An error occurred") {
 // --- DASHBOARD API ---
 export const fetchDashboardStats = async () => {
   try {
-    const res = await axios.get(`${API_URL}/admin/dashboard/stats`, { headers: getAuthHeader() });
+    const res = await axios.get(`${API_URL}/admin/dashboard`, { headers: getAuthHeader() });
     return res.data;
   } catch (error) {
     handleApiError(error, "Failed to fetch dashboard statistics");
