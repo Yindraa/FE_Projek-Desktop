@@ -3,108 +3,57 @@
 import { useState, useEffect } from "react";
 import DashboardLayout from "../../components/layout/DashboardLayout";
 import PageTitle from "../../components/common/PageTitle";
+import { getOrdersForChef } from "../../services/chefService";
 
 export default function OrdersQueue() {
   const [orders, setOrders] = useState([]);
-  const [activeTab, setActiveTab] = useState("pending");
+  const [activeTab, setActiveTab] = useState("In Queue");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate API call with mock data
     const loadOrders = async () => {
       setIsLoading(true);
-
-      // Simulate API delay
-      setTimeout(() => {
-        // Mock orders data
-        setOrders([
-          {
-            id: "ORD-001",
-            table: 5,
-            items: [
-              {
-                name: "Grilled Salmon",
-                quantity: 2,
-                status: "completed",
-                notes: "Medium well",
-              },
-              {
-                name: "Caesar Salad",
-                quantity: 1,
-                status: "completed",
-                notes: "No croutons",
-              },
-              {
-                name: "Garlic Bread",
-                quantity: 1,
-                status: "completed",
-                notes: "",
-              },
-            ],
-            status: "completed",
-            time: "10:15 AM",
-          },
-          {
-            id: "ORD-002",
-            table: 3,
-            items: [
-              {
-                name: "Margherita Pizza",
-                quantity: 1,
-                status: "in-progress",
-                notes: "Extra cheese",
-              },
-              {
-                name: "Chicken Wings",
-                quantity: 2,
-                status: "in-progress",
-                notes: "Spicy",
-              },
-            ],
-            status: "in-progress",
-            time: "10:30 AM",
-          },
-          {
-            id: "ORD-003",
-            table: 8,
-            items: [
-              {
-                name: "Spaghetti Carbonara",
-                quantity: 1,
-                status: "pending",
-                notes: "Al dente",
-              },
-              { name: "Tiramisu", quantity: 1, status: "pending", notes: "" },
-            ],
-            status: "pending",
-            time: "10:40 AM",
-          },
-          {
-            id: "ORD-004",
-            table: 1,
-            items: [
-              {
-                name: "Beef Burger",
-                quantity: 1,
-                status: "pending",
-                notes: "No onions",
-              },
-              {
-                name: "French Fries",
-                quantity: 1,
-                status: "pending",
-                notes: "Extra salt",
-              },
-            ],
-            status: "pending",
-            time: "10:45 AM",
-          },
-        ]);
-
+      try {
+        const apiOrders = await getOrdersForChef();
+        // Map API data to FE format
+        const mappedOrders = apiOrders.map((order) => ({
+          id: order.id,
+          table: order.table?.tableNumber || "-",
+          items: order.orderItems.map((item) => ({
+            name: item.menuItem?.name || "-",
+            quantity: item.quantity,
+            status:
+              order.status === "IN_QUEUE"
+                ? "In Queue"
+                : order.status === "IN_PROCESS"
+                ? "in-process"
+                : order.status === "READY"
+                ? "Ready"
+                : order.status,
+            notes: item.notes || "",
+          })),
+          status:
+            order.status === "IN_QUEUE"
+              ? "In Queue"
+              : order.status === "IN_PROCESS"
+              ? "in-process"
+              : order.status === "READY"
+              ? "Ready"
+              : order.status,
+          time: order.orderTime
+            ? new Date(order.orderTime).toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              })
+            : "-",
+        }));
+        setOrders(mappedOrders);
+      } catch (err) {
+        setOrders([]);
+      } finally {
         setIsLoading(false);
-      }, 1000);
+      }
     };
-
     loadOrders();
   }, []);
 
@@ -127,19 +76,19 @@ export default function OrdersQueue() {
           });
 
           // Only update the order status if ALL items have the same status
-          const allCompleted = updatedItems.every(
-            (item) => item.status === "completed"
+          const allReady = updatedItems.every(
+            (item) => item.status === "Ready"
           );
-          const allInProgress = updatedItems.every(
+          const allInProcess = updatedItems.every(
             (item) =>
-              item.status === "in-progress" || item.status === "completed"
+              item.status === "in-process" || item.status === "Ready"
           );
 
           let orderStatus = order.status;
-          if (allCompleted) {
-            orderStatus = "completed";
-          } else if (allInProgress && !allCompleted) {
-            orderStatus = "in-progress";
+          if (allReady) {
+            orderStatus = "Ready";
+          } else if (allInProcess && !allReady) {
+            orderStatus = "in-process";
           }
 
           return {
@@ -173,16 +122,16 @@ export default function OrdersQueue() {
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value)}
             >
-              <option value="pending">Pending</option>
-              <option value="in-progress">In Progress</option>
-              <option value="completed">Completed</option>
+              <option value="In Queue">In Queue</option>
+              <option value="in-process">In Process</option>
+              <option value="Ready">Ready</option>
               <option value="all">All Orders</option>
             </select>
           </div>
           <div className="hidden sm:block">
             <div className="border-b border-gray-200">
               <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                {["pending", "in-progress", "completed", "all"].map((tab) => (
+                {["In Queue", "in-process", "Ready", "all"].map((tab) => (
                   <button
                     key={tab}
                     onClick={() => setActiveTab(tab)}
@@ -234,9 +183,9 @@ export default function OrdersQueue() {
                   </div>
                   <span
                     className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                      order.status === "completed"
+                      order.status === "Ready"
                         ? "bg-green-100 text-green-800"
-                        : order.status === "in-progress"
+                        : order.status === "in-process"
                         ? "bg-yellow-100 text-yellow-800"
                         : "bg-blue-100 text-blue-800"
                     }`}
@@ -296,9 +245,9 @@ export default function OrdersQueue() {
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <span
                               className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                item.status === "completed"
+                                item.status === "Ready"
                                   ? "bg-green-100 text-green-800"
-                                  : item.status === "in-progress"
+                                  : item.status === "in-process"
                                   ? "bg-yellow-100 text-yellow-800"
                                   : "bg-blue-100 text-blue-800"
                               }`}
@@ -308,13 +257,13 @@ export default function OrdersQueue() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {item.status === "pending" && (
+                            {item.status === "In Queue" && (
                               <button
                                 onClick={() =>
                                   handleItemStatusChange(
                                     order.id,
                                     item.name,
-                                    "in-progress"
+                                    "in-process"
                                   )
                                 }
                                 className="text-amber-600 hover:text-amber-900"
@@ -322,13 +271,13 @@ export default function OrdersQueue() {
                                 Start Cooking
                               </button>
                             )}
-                            {item.status === "in-progress" && (
+                            {item.status === "in-process" && (
                               <button
                                 onClick={() =>
                                   handleItemStatusChange(
                                     order.id,
                                     item.name,
-                                    "completed"
+                                    "Ready"
                                   )
                                 }
                                 className="text-green-600 hover:text-green-900"
@@ -336,8 +285,8 @@ export default function OrdersQueue() {
                                 Mark as Ready
                               </button>
                             )}
-                            {item.status === "completed" && (
-                              <span className="text-gray-400">Completed</span>
+                            {item.status === "Ready" && (
+                              <span className="text-gray-400">Ready</span>
                             )}
                           </td>
                         </tr>
