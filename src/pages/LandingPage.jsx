@@ -15,15 +15,9 @@ export default function LandingPage() {
             <div className="flex space-x-4">
               <Link
                 to="/login"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-amber-800 bg-amber-100 hover:bg-amber-200"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-amber-800 hover:bg-amber-200"
               >
                 Sign In
-              </Link>
-              <Link
-                to="/register"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-xl text-white bg-amber-800 hover:bg-amber-700"
-              >
-                Get Started
               </Link>
             </div>
           </div>
@@ -45,19 +39,11 @@ export default function LandingPage() {
           <div className="mt-10 sm:flex sm:justify-center">
             <div className="rounded-md shadow">
               <Link
-                to="/register"
+                to="/login"
                 className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-amber-800 hover:bg-amber-700 md:py-4 md:text-lg md:px-10"
               >
                 Get Started
                 <ArrowRightIcon className="ml-2 h-5 w-5" />
-              </Link>
-            </div>
-            <div className="mt-3 sm:mt-0 sm:ml-3">
-              <Link
-                to="/login"
-                className="w-full flex items-center justify-center px-8 py-3 border border-transparent text-base font-medium rounded-xl text-amber-800 bg-white hover:bg-gray-50 md:py-4 md:text-lg md:px-10"
-              >
-                Sign In
               </Link>
             </div>
           </div>
@@ -207,28 +193,28 @@ export default function LandingPage() {
             <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 {
-                  name: "Alex Johnson",
-                  role: "Lead Developer",
-                  imageUrl: "/placeholder.svg?height=300&width=300",
-                  bio: "Full-stack developer with expertise in React and Electron applications.",
+                  name: "Made Narayindra",
+                  role: "Frontend Developer",
+                  imageUrl: "src/assets/Indra.jpg?height=300&width=300",
+                  bio: "Specializes in creating responsive and intuitive user interfaces using React and modern frontend technologies.",
                 },
                 {
-                  name: "Sarah Chen",
-                  role: "UI/UX Designer",
-                  imageUrl: "/placeholder.svg?height=300&width=300",
-                  bio: "Creates beautiful, intuitive interfaces with a focus on user experience.",
-                },
-                {
-                  name: "Michael Rodriguez",
+                  name: "Michael Reynald Manoppo",
                   role: "Backend Developer",
-                  imageUrl: "/placeholder.svg?height=300&width=300",
-                  bio: "Database expert specializing in efficient data structures and API development.",
+                  imageUrl: "src/assets/Mikel.JPG?height=300&width=300",
+                  bio: "Expert in server-side development, database design, and API architecture for robust restaurant management systems.",
                 },
                 {
-                  name: "Emily Patel",
-                  role: "QA Engineer",
-                  imageUrl: "/placeholder.svg?height=300&width=300",
-                  bio: "Ensures application quality through rigorous testing and user feedback.",
+                  name: "Elsa Ester Lokas",
+                  role: "UI/UX Designer",
+                  imageUrl: "src/assets/Elsa.jpg?height=300&width=300",
+                  bio: "Creates beautiful, user-centered designs that enhance the dining experience through thoughtful interface design.",
+                },
+                {
+                  name: "Clark Metthew Rotinsulu",
+                  role: "Proposal Writer",
+                  imageUrl: "src/assets/Clark.jpg?height=300&width=300",
+                  bio: "Crafts comprehensive project proposals and documentation that effectively communicate the vision and technical requirements of DineFlow.",
                 },
               ].map((person) => (
                 <div
@@ -267,18 +253,10 @@ export default function LandingPage() {
             <div className="mt-8 flex justify-center">
               <div className="inline-flex rounded-md shadow">
                 <Link
-                  to="/register"
+                  to="/login"
                   className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-xl text-amber-800 bg-white hover:bg-gray-50"
                 >
                   Get started
-                </Link>
-              </div>
-              <div className="ml-3 inline-flex">
-                <Link
-                  to="/login"
-                  className="inline-flex items-center justify-center px-5 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-amber-900 hover:bg-amber-950"
-                >
-                  Sign in
                 </Link>
               </div>
             </div>

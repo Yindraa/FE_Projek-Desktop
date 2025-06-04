@@ -1,0 +1,8 @@
+version: 1.0.0
+files:
+  - url: DineFlow-Setup-1.0.0.exe
+    sha512: dXvOPHasZzza1UWAGm32xKporkgciund8HJf/ITQNqatnJ9RT1NybN773Hu5K5XIZincTSTq+CfRBBeWwnlcpQ==
+    size: 73483552
+path: DineFlow-Setup-1.0.0.exe
+sha512: dXvOPHasZzza1UWAGm32xKporkgciund8HJf/ITQNqatnJ9RT1NybN773Hu5K5XIZincTSTq+CfRBBeWwnlcpQ==
+releaseDate: '2025-06-04T09:23:21.517Z'

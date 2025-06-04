@@ -11,7 +11,6 @@ import { useAuth } from "./contexts/AuthContext";
 import { NotificationProvider } from "./contexts/NotificationContext";
 import LandingPage from "./pages/LandingPage";
 import LoginPage from "./pages/auth/LoginPage";
-import RegisterPage from "./pages/auth/RegisterPage";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import MenuManagement from "./pages/admin/MenuManagement";
 import UserManagement from "./pages/admin/UserManagement";
@@ -21,7 +20,6 @@ import Tables from "./pages/waiter/Tables";
 import Orders from "./pages/waiter/Orders";
 import Payments from "./pages/waiter/Payments";
 import OrdersQueue from "./pages/chef/OrdersQueue";
-import KitchenStatus from "./pages/chef/KitchenStatus";
 import LoadingScreen from "./components/common/LoadingScreen";
 
 function App() {
@@ -51,41 +49,34 @@ function App() {
 
   if (loading) {
     return <LoadingScreen />;
-  }  return (
+  }
+  return (
     <NotificationProvider>
-      <Router future={{
-        v7_startTransition: true,
-        v7_relativeSplatPath: true
-      }}>
+      <Router
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true,
+        }}
+      >
         <Routes>
           {/* Public routes */}
           <Route path="/" element={<LandingPage />} />
           <Route
             path="/login"
             element={
-              currentUser
-                ? userRole === "admin"
-                  ? <Navigate to="/dashboard" />
-                  : userRole === "chef"
-                  ? <Navigate to="/chef/orders" />
-                  : userRole === "waiter"
-                  ? <Navigate to="/dashboard" />
-                  : <Navigate to="/dashboard" />
-                : <LoginPage />
-            }
-          />
-          <Route
-            path="/register"
-            element={
-              currentUser
-                ? userRole === "admin"
-                  ? <Navigate to="/dashboard" />
-                  : userRole === "chef"
-                  ? <Navigate to="/chef/orders" />
-                  : userRole === "waiter"
-                  ? <Navigate to="/dashboard" />
-                  : <Navigate to="/dashboard" />
-                : <RegisterPage />
+              currentUser ? (
+                userRole === "admin" ? (
+                  <Navigate to="/dashboard" />
+                ) : userRole === "chef" ? (
+                  <Navigate to="/chef/orders" />
+                ) : userRole === "waiter" ? (
+                  <Navigate to="/dashboard" />
+                ) : (
+                  <Navigate to="/dashboard" />
+                )
+              ) : (
+                <LoginPage />
+              )
             }
           />
 
@@ -179,16 +170,6 @@ function App() {
                 <Navigate to="/login" />
               ) : (
                 <OrdersQueue />
-              )
-            }
-          />
-          <Route
-            path="/chef/kitchen"
-            element={
-              !currentUser || userRole !== "chef" ? (
-                <Navigate to="/login" />
-              ) : (
-                <KitchenStatus />
               )
             }
           />

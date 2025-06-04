@@ -34,7 +34,6 @@ const navigation = {
       href: "/chef/orders",
       icon: ClipboardDocumentListIcon,
     },
-    { name: "Kitchen Status", href: "/chef/kitchen", icon: FireIcon },
   ],
 };
 
