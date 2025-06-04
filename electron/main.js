@@ -23,19 +23,16 @@ function createWindow() {
     show: false,
   });
 
-  const startURL = isDev
-    ? "http://localhost:5173"
-    : `file://${path.join(__dirname, "../dist/index.html")}`;
-
-  mainWindow.loadURL(startURL);
+  if (isDev) {
+    mainWindow.loadURL("http://localhost:5173");
+    mainWindow.webContents.openDevTools();
+  } else {
+    mainWindow.loadFile(path.resolve(__dirname, '..', 'dist', 'index.html'));
+  }
 
   mainWindow.once("ready-to-show", () => {
     mainWindow.show();
   });
-
-  if (isDev) {
-    mainWindow.webContents.openDevTools();
-  }
 
   mainWindow.on("closed", () => {
     mainWindow = null;

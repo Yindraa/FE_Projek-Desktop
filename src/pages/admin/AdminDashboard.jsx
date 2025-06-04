@@ -12,21 +12,32 @@ import {
 } from "@heroicons/react/24/outline";
 import { useEffect } from "react";
 import { CurrencyDollarIcon, UsersIcon } from "@heroicons/react/24/outline";
-import { fetchDashboardStats } from "../../services/adminService";
+import { fetchDashboardStats, fetchSalesChartData, fetchPopularMenuItemsWidget, fetchMenuAnalytics } from "../../services/adminService";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Label } from "recharts";
 
-// Mock data for popular items
-const mockPopularItems = [
-  { name: "Grilled Salmon", category: "Main Course", orders: 45 },
-  { name: "Caesar Salad", category: "Appetizer", orders: 38 },
-  { name: "Chocolate Lava Cake", category: "Dessert", orders: 32 },
-  { name: "Margherita Pizza", category: "Main Course", orders: 30 },
-  { name: "Iced Coffee", category: "Beverage", orders: 28 },
-];
+function formatRupiah(value) {
+  if (value >= 1000000) return `Rp${(value / 1000000).toFixed(1)}Jt`;
+  if (value >= 1000) return `Rp${(value / 1000).toFixed(0)}K`;
+  return `Rp${value}`;
+}
+function CustomTooltip({ active, payload, label }) {
+  if (active && payload && payload.length) {
+    return (
+      <div className="bg-white border border-amber-200 rounded-md px-3 py-2 shadow text-xs">
+        <div className="font-semibold mb-1">{label}</div>
+        <div>Pendapatan: <span className="text-amber-600 font-bold">{formatRupiah(payload[0]?.value)}</span></div>
+        <div>Order: <span className="text-blue-600 font-bold">{payload[1]?.value}</span></div>
+      </div>
+    );
+  }
+  return null;
+}
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
   const [popularItems, setPopularItems] = useState([]);
+  const [salesChart, setSalesChart] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -70,7 +81,7 @@ export default function AdminDashboard() {
             icon: () => <UsersIcon className="h-6 w-6" aria-hidden="true" />,
             change: "",
             changeType: "neutral",
-          },
+          }
         ]);
         setRecentOrders(
           (data.recentOrders || []).map((order) => ({
@@ -80,11 +91,22 @@ export default function AdminDashboard() {
             status:
               order.status === "COMPLETED"
                 ? "Completed"
-                : order.status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase()),
+                : order.status.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase())
           }))
         );
-        // Keep using mockPopularItems for now
-        setPopularItems(mockPopularItems);
+        // Fetch popular menu items widget
+        const popularMenuItems = await fetchPopularMenuItemsWidget(5);
+        setPopularItems(
+          (popularMenuItems || []).map(item => ({
+            name: item.name,
+            category: item.category,
+            orders: item.totalOrders || item.orderCount || 0,
+            imageUrl: item.imageUrl
+          }))
+        );
+        // Fetch sales chart data
+        const salesData = await fetchSalesChartData(7);
+        setSalesChart(salesData || []);
         setError(null);
       } catch (err) {
         console.error("Error loading dashboard data:", err);
@@ -176,29 +198,6 @@ export default function AdminDashboard() {
                       </div>
                     </div>
                   </div>
-                  <div className="bg-gray-50 px-5 py-3">
-                    <div className="text-sm flex items-center">
-                      <span
-                        className={`font-medium flex items-center ${
-                          item.changeType === "increase"
-                            ? "text-green-600"
-                            : item.changeType === "decrease"
-                            ? "text-red-600"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {item.changeType === "increase" ? (
-                          <ArrowUpIcon className="h-4 w-4 mr-1" />
-                        ) : item.changeType === "decrease" ? (
-                          <ArrowDownIcon className="h-4 w-4 mr-1" />
-                        ) : null}
-                        {item.change}
-                      </span>{" "}
-                      <span className="text-gray-500 ml-1">
-                        from previous period
-                      </span>
-                    </div>
-                  </div>
                 </div>
               ))}
         </div>
@@ -220,10 +219,40 @@ export default function AdminDashboard() {
                 <div className="animate-pulse h-64 bg-gray-200 rounded"></div>
               ) : (
                 <div className="h-64 bg-amber-50 rounded-xl flex items-center justify-center">
-                  <p className="text-gray-500">
-                    Sales chart will be displayed here
-                  </p>
-                  {/* In a real app, you would integrate a chart library like Chart.js or Recharts */}
+                  {salesChart && salesChart.length > 0 ? (
+                    <ResponsiveContainer width="100%" height={220}>
+                      <LineChart data={salesChart} margin={{ top: 20, right: 40, left: 10, bottom: 10 }}>
+                        <CartesianGrid strokeDasharray="4 4" stroke="#f3e8d2" />
+                        <XAxis dataKey="day" tick={{ fontSize: 12 }} />
+                        <YAxis
+                          yAxisId="left"
+                          orientation="left"
+                          tickFormatter={formatRupiah}
+                          tick={{ fontSize: 12 }}
+                          width={80}
+                          axisLine={false}
+                        >
+                          <Label value="Pendapatan (Rp)" angle={-90} position="insideLeft" style={{ textAnchor: 'middle', fill: '#b45309', fontSize: 12 }} />
+                        </YAxis>
+                        <YAxis
+                          yAxisId="right"
+                          orientation="right"
+                          tickFormatter={v => v}
+                          tick={{ fontSize: 12 }}
+                          width={40}
+                          axisLine={false}
+                        >
+                          <Label value="Jumlah Order" angle={90} position="insideRight" style={{ textAnchor: 'middle', fill: '#2563eb', fontSize: 12 }} />
+                        </YAxis>
+                        <Tooltip content={<CustomTooltip />} />
+                        <Legend verticalAlign="top" height={36} />
+                        <Line yAxisId="left" type="monotone" dataKey="revenue" name="Revenue" stroke="#f59e42" strokeWidth={2} dot={false} />
+                        <Line yAxisId="right" type="monotone" dataKey="orders" name="Orders" stroke="#2563eb" strokeWidth={2} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <p className="text-gray-500">No sales data available.</p>
+                  )}
                 </div>
               )}
             </div>
@@ -311,11 +340,6 @@ export default function AdminDashboard() {
                       ))}
                     </tbody>
                   </table>
-                  <div className="py-3 flex justify-center">
-                    <button className="text-sm text-amber-600 hover:text-amber-800 font-medium">
-                      View All Orders
-                    </button>
-                  </div>
                 </div>
               )}
             </div>
@@ -359,11 +383,6 @@ export default function AdminDashboard() {
                       </div>
                     </li>
                   ))}
-                  <li className="py-3 flex justify-center">
-                    <button className="text-sm text-amber-600 hover:text-amber-800 font-medium">
-                      View All Items
-                    </button>
-                  </li>
                 </ul>
               )}
             </div>

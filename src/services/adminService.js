@@ -286,24 +286,64 @@ export const generateStaffReport = async (timeRange = "week", format = "pdf") =>
   }
 };
 
+// --- DASHBOARD CHARTS API ---
+export const fetchSalesChartData = async (days = 7) => {
+  try {
+    const res = await axios.get(`${API_URL}/admin/charts/sales`, {
+      params: { days },
+      headers: getAuthHeader(),
+    });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to fetch sales chart data");
+  }
+};
 
-// export const bulkUpdateMenuItems = async (updates) => {
-//   try {
-//     // NOTE: This endpoint may need to be implemented in the backend
-//     const res = await axios.patch(`${API_URL}/menu/items/bulk`, updates, { headers: getAuthHeader() });
-//     return res.data.map(transformMenuItemResponse);
-//   } catch (error) {
-//     handleApiError(error, "Failed to bulk update menu items");
-//   }
-// };
+// --- DASHBOARD WIDGET ENDPOINTS ---
+export const fetchPopularMenuItemsWidget = async (limit = 5) => {
+  try {
+    const res = await axios.get(`${API_URL}/admin/popular-menu-items`, {
+      params: { limit },
+      headers: getAuthHeader(),
+    });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to fetch popular menu items widget");
+  }
+};
 
-// export const searchMenuItems = async (query, filters = {}) => {
-//   try {
-//     // NOTE: This endpoint may need to be implemented in the backend
-//     const params = { query, ...filters };
-//     const res = await axios.get(`${API_URL}/menu/items/search`, { params, headers: getAuthHeader() });
-//     return res.data.map(transformMenuItemResponse);
-//   } catch (error) {
-//     handleApiError(error, "Failed to search menu items");
-//   }
-// };
+export const fetchMenuAnalytics = async () => {
+  try {
+    const res = await axios.get(`${API_URL}/admin/menu-analytics`, {
+      headers: getAuthHeader(),
+    });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to fetch menu analytics");
+  }
+};
+
+// --- REPORTS SUMMARY & CHART DATA API ---
+export const fetchReportsSummary = async (timeRange = "week") => {
+  try {
+    const res = await axios.get(`${API_URL}/admin/reports/summary`, {
+      params: { timeRange },
+      headers: getAuthHeader(),
+    });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to fetch reports summary");
+  }
+};
+
+export const fetchReportsChartData = async (timeRange = "week") => {
+  try {
+    const res = await axios.get(`${API_URL}/admin/reports/chart-data`, {
+      params: { timeRange },
+      headers: getAuthHeader(),
+    });
+    return res.data;
+  } catch (error) {
+    handleApiError(error, "Failed to fetch reports chart data");
+  }
+};

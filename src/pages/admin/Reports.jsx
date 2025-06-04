@@ -10,89 +10,14 @@ import {
   CalendarIcon,
   PrinterIcon,
 } from "@heroicons/react/24/outline";
-
-// Mock data for sales data
-const mockSalesData = [
-  {
-    name: "Total Sales",
-    value: "$24,000",
-    icon: () => {
-      return (
-        <CurrencyDollarIcon
-          className="h-6 w-6 text-amber-600"
-          aria-hidden="true"
-        />
-      );
-    },
-  },
-  {
-    name: "Average Order",
-    value: "$53.33",
-    icon: () => {
-      return (
-        <ChartBarIcon className="h-6 w-6 text-amber-600" aria-hidden="true" />
-      );
-    },
-  },
-  {
-    name: "Orders",
-    value: "450",
-    icon: () => {
-      return (
-        <QueueListIcon className="h-6 w-6 text-amber-600" aria-hidden="true" />
-      );
-    },
-  },
-  {
-    name: "Customers",
-    value: "320",
-    icon: () => {
-      return (
-        <UsersIcon className="h-6 w-6 text-amber-600" aria-hidden="true" />
-      );
-    },
-  },
-];
-
-// Mock data for popular items
-const mockPopularItems = [
-  { name: "Grilled Salmon", category: "Main Course", orders: 45 },
-  { name: "Caesar Salad", category: "Appetizer", orders: 38 },
-  { name: "Chocolate Lava Cake", category: "Dessert", orders: 32 },
-  { name: "Margherita Pizza", category: "Main Course", orders: 30 },
-  { name: "Iced Coffee", category: "Beverage", orders: 28 },
-];
-
-// Mock data for staff performance
-const mockStaffPerformance = [
-  {
-    name: "Waiter One",
-    role: "Waiter",
-    ordersProcessed: 120,
-    salesAmount: "5,240",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    name: "Waiter Two",
-    role: "Waiter",
-    ordersProcessed: 98,
-    salesAmount: "4,120",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-  {
-    name: "Chef User",
-    role: "Chef",
-    ordersProcessed: 218,
-    salesAmount: "9,360",
-    avatar: "/placeholder.svg?height=40&width=40",
-  },
-];
-
+import { fetchReportsSummary, fetchReportsChartData } from "../../services/adminService";
 import { UsersIcon } from "@heroicons/react/24/outline";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend, Label } from "recharts";
 
 export default function Reports() {
   const [timeRange, setTimeRange] = useState("week");
   const [salesData, setSalesData] = useState([]);
+  const [salesChartData, setSalesChartData] = useState([]); // for future chart
   const [popularItems, setPopularItems] = useState([]);
   const [staffPerformance, setStaffPerformance] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -107,14 +32,39 @@ export default function Reports() {
     const loadReportData = async () => {
       try {
         setIsLoading(true);
-
-        // Simulate API delay
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-
-        // Use mock data directly
-        setSalesData(mockSalesData);
-        setPopularItems(mockPopularItems);
-        setStaffPerformance(mockStaffPerformance);
+        // Fetch summary metrics and chart data from new endpoints
+        const [summary, chart, items, staff] = await Promise.all([
+          fetchReportsSummary(timeRange),
+          fetchReportsChartData(timeRange),
+          // fallback: use summary.popularItems if available, else fetch separately if needed
+          // fallback: use summary.staffPerformance if available, else fetch separately if needed
+        ]);
+        const summaryData = summary?.summary || {};
+        setSalesData([
+          {
+            name: "Total Sales",
+            value: summaryData.totalSales ? `Rp${Number(summaryData.totalSales).toLocaleString("id-ID")}` : "-",
+            icon: () => <CurrencyDollarIcon className="h-6 w-6 text-amber-600" aria-hidden="true" />,
+          },
+          {
+            name: "Average Order",
+            value: summaryData.averageOrder ? `Rp${Number(summaryData.averageOrder).toLocaleString("id-ID")}` : "-",
+            icon: () => <ChartBarIcon className="h-6 w-6 text-amber-600" aria-hidden="true" />,
+          },
+          {
+            name: "Orders",
+            value: summaryData.orders ? summaryData.orders.toLocaleString("id-ID") : "-",
+            icon: () => <QueueListIcon className="h-6 w-6 text-amber-600" aria-hidden="true" />,
+          },
+          {
+            name: "Customers",
+            value: summaryData.customers ? summaryData.customers.toLocaleString("id-ID") : "-",
+            icon: () => <UsersIcon className="h-6 w-6 text-amber-600" aria-hidden="true" />,
+          },
+        ]);
+        setPopularItems(summaryData.popularItems || []);
+        setStaffPerformance(summaryData.staffPerformance || []);
+        setSalesChartData(chart.chartData || []);
         setError(null);
       } catch (err) {
         console.error("Error loading report data:", err);
@@ -427,6 +377,26 @@ export default function Reports() {
     }
   };
 
+  function formatRupiah(value) {
+    if (typeof value !== "number") return value;
+    if (value >= 1000000) return `Rp${(value / 1000000).toFixed(1)}Jt`;
+    if (value >= 1000) return `Rp${(value / 1000).toFixed(0)}K`;
+    return `Rp${value}`;
+  }
+
+  function CustomTooltip({ active, payload, label }) {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white border border-amber-200 rounded-md px-3 py-2 shadow text-xs">
+          <div className="font-semibold mb-1">{label}</div>
+          <div>Pendapatan: <span className="text-amber-600 font-bold">{formatRupiah(payload[0]?.value)}</span></div>
+          {payload[1] && <div>Order: <span className="text-blue-600 font-bold">{payload[1]?.value}</span></div>}
+        </div>
+      );
+    }
+    return null;
+  }
+
   return (
     <DashboardLayout role="admin">
       <div className="animate-fadeIn">
@@ -505,10 +475,40 @@ export default function Reports() {
               <div className="animate-pulse h-64 bg-gray-200 rounded"></div>
             ) : (
               <div className="h-64 bg-amber-50 rounded-xl flex items-center justify-center">
-                <p className="text-gray-500">
-                  Sales chart will be displayed here
-                </p>
-                {/* In a real app, you would integrate a chart library like Chart.js or Recharts */}
+                {salesChartData && salesChartData.length > 0 ? (
+                  <ResponsiveContainer width="100%" height={220}>
+                    <LineChart data={salesChartData} margin={{ top: 20, right: 40, left: 10, bottom: 10 }}>
+                      <CartesianGrid strokeDasharray="4 4" stroke="#f3e8d2" />
+                      <XAxis dataKey="label" tick={{ fontSize: 12 }} />
+                      <YAxis
+                        yAxisId="left"
+                        orientation="left"
+                        tickFormatter={formatRupiah}
+                        tick={{ fontSize: 12 }}
+                        width={80}
+                        axisLine={false}
+                      >
+                        <Label value="Pendapatan (Rp)" angle={-90} position="insideLeft" style={{ textAnchor: 'middle', fill: '#b45309', fontSize: 12 }} />
+                      </YAxis>
+                      <YAxis
+                        yAxisId="right"
+                        orientation="right"
+                        tickFormatter={v => v}
+                        tick={{ fontSize: 12 }}
+                        width={40}
+                        axisLine={false}
+                      >
+                        <Label value="Order" angle={90} position="insideRight" style={{ textAnchor: 'middle', fill: '#2563eb', fontSize: 12 }} />
+                      </YAxis>
+                      <Tooltip content={<CustomTooltip />} />
+                      <Legend verticalAlign="top" height={36} />
+                      <Line yAxisId="left" type="monotone" dataKey="revenue" name="Revenue" stroke="#f59e42" strokeWidth={2} dot={false} />
+                      <Line yAxisId="right" type="monotone" dataKey="orders" name="Orders" stroke="#2563eb" strokeWidth={2} dot={false} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <p className="text-gray-500">No sales data available.</p>
+                )}
               </div>
             )}
             <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
@@ -550,159 +550,6 @@ export default function Reports() {
                       </div>
                     </div>
                   ))}
-            </div>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-2 mt-6">
-          {/* Popular Items */}
-          <div className="bg-white shadow-md rounded-xl overflow-hidden">
-            <div className="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
-              <div className="flex items-center">
-                <QueueListIcon className="h-5 w-5 text-amber-600 mr-2" />
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Popular Items
-                </h3>
-              </div>
-              <button
-                onClick={() => handlePrintReport("items")}
-                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
-              >
-                <PrinterIcon className="-ml-0.5 mr-2 h-4 w-4" />
-                Print
-              </button>
-            </div>
-            <div className="px-4 py-3 sm:px-6" ref={itemsReportRef}>
-              {isLoading ? (
-                <div className="animate-pulse space-y-4">
-                  {Array(5)
-                    .fill(0)
-                    .map((_, index) => (
-                      <div
-                        key={index}
-                        className="h-12 bg-gray-200 rounded"
-                      ></div>
-                    ))}
-                </div>
-              ) : (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Item Name
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Category
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Orders
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {popularItems.map((item, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {item.name}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {item.category}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-amber-600 font-medium text-right">
-                          {item.orders}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
-            </div>
-          </div>
-
-          {/* Staff Performance */}
-          <div className="bg-white shadow-md rounded-xl overflow-hidden">
-            <div className="px-4 py-5 sm:px-6 border-b border-gray-200 flex justify-between items-center">
-              <div className="flex items-center">
-                <ChartBarIcon className="h-5 w-5 text-amber-600 mr-2" />
-                <h3 className="text-lg leading-6 font-medium text-gray-900">
-                  Staff Performance
-                </h3>
-              </div>
-              <button
-                onClick={() => handlePrintReport("staff")}
-                className="inline-flex items-center px-3 py-1.5 border border-gray-300 text-sm font-medium rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-amber-500"
-              >
-                <PrinterIcon className="-ml-0.5 mr-2 h-4 w-4" />
-                Print
-              </button>
-            </div>
-            <div className="px-4 py-3 sm:px-6" ref={staffReportRef}>
-              {isLoading ? (
-                <div className="animate-pulse space-y-4">
-                  {Array(5)
-                    .fill(0)
-                    .map((_, index) => (
-                      <div
-                        key={index}
-                        className="h-12 bg-gray-200 rounded"
-                      ></div>
-                    ))}
-                </div>
-              ) : (
-                <table className="min-w-full divide-y divide-gray-200">
-                  <thead>
-                    <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Staff Member
-                      </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Role
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Orders
-                      </th>
-                      <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                        Sales
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
-                    {staffPerformance.map((staff, index) => (
-                      <tr key={index} className="hover:bg-gray-50">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="flex-shrink-0 h-10 w-10">
-                              <img
-                                className="h-10 w-10 rounded-full"
-                                src={
-                                  staff.avatar ||
-                                  "/placeholder.svg?height=40&width=40" ||
-                                  "/placeholder.svg"
-                                }
-                                alt=""
-                              />
-                            </div>
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-gray-900">
-                                {staff.name}
-                              </div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                          {staff.role}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-amber-600 font-medium text-right">
-                          {staff.ordersProcessed}
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-amber-600 font-medium text-right">
-                          ${staff.salesAmount}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              )}
             </div>
           </div>
         </div>

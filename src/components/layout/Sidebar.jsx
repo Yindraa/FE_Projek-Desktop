@@ -29,7 +29,6 @@ const navigation = {
     { name: "Payments", href: "/waiter/payments", icon: CreditCardIcon },
   ],
   chef: [
-    { name: "Dashboard", href: "/dashboard", icon: HomeIcon },
     {
       name: "Orders Queue",
       href: "/chef/orders",

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
-  BrowserRouter as Router,
+  HashRouter as Router, // Gunakan HashRouter
   Routes,
   Route,
   Navigate,
@@ -20,7 +20,6 @@ import WaiterDashboard from "./pages/waiter/WaiterDashboard";
 import Tables from "./pages/waiter/Tables";
 import Orders from "./pages/waiter/Orders";
 import Payments from "./pages/waiter/Payments";
-import ChefDashboard from "./pages/chef/ChefDashboard";
 import OrdersQueue from "./pages/chef/OrdersQueue";
 import KitchenStatus from "./pages/chef/KitchenStatus";
 import LoadingScreen from "./components/common/LoadingScreen";
@@ -63,12 +62,30 @@ function App() {
           <Route path="/" element={<LandingPage />} />
           <Route
             path="/login"
-            element={currentUser ? <Navigate to="/dashboard" /> : <LoginPage />}
+            element={
+              currentUser
+                ? userRole === "admin"
+                  ? <Navigate to="/dashboard" />
+                  : userRole === "chef"
+                  ? <Navigate to="/chef/orders" />
+                  : userRole === "waiter"
+                  ? <Navigate to="/dashboard" />
+                  : <Navigate to="/dashboard" />
+                : <LoginPage />
+            }
           />
           <Route
             path="/register"
             element={
-              currentUser ? <Navigate to="/dashboard" /> : <RegisterPage />
+              currentUser
+                ? userRole === "admin"
+                  ? <Navigate to="/dashboard" />
+                  : userRole === "chef"
+                  ? <Navigate to="/chef/orders" />
+                  : userRole === "waiter"
+                  ? <Navigate to="/dashboard" />
+                  : <Navigate to="/dashboard" />
+                : <RegisterPage />
             }
           />
 
@@ -81,7 +98,7 @@ function App() {
               ) : userRole === "admin" ? (
                 <AdminDashboard />
               ) : userRole === "chef" ? (
-                <ChefDashboard />
+                <Navigate to="/chef/orders" />
               ) : userRole === "waiter" ? (
                 <WaiterDashboard />
               ) : (
